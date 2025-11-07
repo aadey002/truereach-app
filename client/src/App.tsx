@@ -4,7 +4,8 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Navigation } from "@/components/Navigation";
-import Home from "@/pages/Home";
+import Landing from "@/pages/Landing";
+import BatchUpload from "@/pages/BatchUpload";
 import WidgetDemo from "@/pages/WidgetDemo";
 import WidgetIntegration from "@/pages/WidgetIntegration";
 import Pricing from "@/pages/Pricing";
@@ -13,7 +14,8 @@ import NotFound from "@/pages/not-found";
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Home} />
+      <Route path="/" component={Landing} />
+      <Route path="/batch" component={BatchUpload} />
       <Route path="/widget-demo" component={WidgetDemo} />
       <Route path="/widget-integration" component={WidgetIntegration} />
       <Route path="/pricing" component={Pricing} />

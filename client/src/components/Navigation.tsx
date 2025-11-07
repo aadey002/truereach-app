@@ -7,7 +7,7 @@ export function Navigation() {
   const [location] = useLocation();
 
   const links = [
-    { href: "/", label: "Batch Upload", icon: FileText },
+    { href: "/batch", label: "Batch Upload", icon: FileText },
     { href: "/widget-demo", label: "Real-Time Demo", icon: Zap },
     { href: "/widget-integration", label: "Integration", icon: Zap },
     { href: "/pricing", label: "Pricing", icon: DollarSign },
