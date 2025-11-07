@@ -2,23 +2,19 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { FileText, Zap, Code2, CheckCircle, ArrowRight } from "lucide-react";
+import logoUrl from "@assets/image_1762494775992.png";
 
 export default function Landing() {
   return (
     <div className="max-w-7xl mx-auto">
       <section className="text-center py-20 mb-16">
-        <div className="mb-8">
-          <h1 className="text-7xl md:text-8xl font-extrabold text-primary mb-3">
-            TrueReach
-          </h1>
-          <p className="text-2xl md:text-3xl font-bold text-muted-foreground italic">
-            Verify. Connect. Care!
-          </p>
+        <div className="flex items-center justify-center mb-8">
+          <img src={logoUrl} alt="TrueReach Logo" className="h-40" />
         </div>
 
-        <h2 className="text-5xl md:text-6xl font-extrabold text-foreground mb-6">
+        <h1 className="text-6xl md:text-7xl font-extrabold text-foreground mb-6">
           Stop Missed Appointments. Start True Patient Engagement.
-        </h2>
+        </h1>
 
         <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto">
           The only patient verification tool built to help <strong>FQHCs reduce no-shows by up to 25%</strong> and maximize valuable clinical time.
