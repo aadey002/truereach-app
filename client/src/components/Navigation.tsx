@@ -18,7 +18,7 @@ export function Navigation() {
       <nav className="p-4">
         <div className="flex justify-between items-center">
           <Link href="/">
-            <img src={logoUrl} alt="TrueReach - Verify. Connect. Care!" className="h-24 cursor-pointer" />
+            <img src={logoUrl} alt="TrueReach - Verify. Connect. Care!" className="h-32 cursor-pointer" />
           </Link>
           <div className="flex gap-2">
             {links.map(({ href, label, icon: Icon }) => (
