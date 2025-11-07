@@ -124,16 +124,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'No phone numbers found in file' });
       }
 
-      // Limit to first 10 for demo
-      const phonesToValidate = phones.slice(0, 10);
       const results = [];
 
-      for (const phone of phonesToValidate) {
+      for (let i = 0; i < phones.length; i++) {
+        const phone = phones[i];
         const result = await validatePhoneNumber(phone, apiKey);
         results.push(result);
         
         // Rate limiting - wait 300ms between requests
-        if (phonesToValidate.indexOf(phone) < phonesToValidate.length - 1) {
+        if (i < phones.length - 1) {
           await new Promise(resolve => setTimeout(resolve, 300));
         }
       }
