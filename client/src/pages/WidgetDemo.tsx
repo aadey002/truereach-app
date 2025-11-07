@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { CheckCircle, XCircle, AlertTriangle, Smartphone } from "lucide-react";
 
 interface ValidationResult {
+  status: 'valid' | 'invalid' | 'error';
   valid: boolean;
   phone_type: string;
   can_receive_sms: boolean;
@@ -13,6 +14,7 @@ interface ValidationResult {
   formatted?: string;
   local_format?: string;
   warnings?: string[];
+  error?: string;
 }
 
 export default function WidgetDemo() {
@@ -49,15 +51,18 @@ export default function WidgetDemo() {
         throw new Error(result.error);
       }
       
+      // Add status based on validation result
+      result.status = result.valid ? 'valid' : 'invalid';
       setResult(result);
     } catch (error) {
       console.error('Validation error:', error);
       setResult({
+        status: 'error',
         valid: false,
         phone_type: 'error',
         can_receive_sms: false,
-        carrier: 'Service Error',
-        warnings: [error instanceof Error ? error.message : 'Validation service unavailable - please try again later']
+        carrier: 'Unknown',
+        error: error instanceof Error ? error.message : 'Validation service unavailable - please try again later'
       });
     } finally {
       setLoading(false);
@@ -75,6 +80,24 @@ export default function WidgetDemo() {
 
     if (!result) return null;
 
+    // Infrastructure/Service Error State
+    if (result.status === 'error') {
+      return (
+        <div className="mt-3 p-4 rounded-lg border-2 bg-orange-50 border-orange-500 dark:bg-orange-950/20">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-orange-600" />
+            <span className="text-orange-800 dark:text-orange-300 font-medium">
+              Validation Service Error
+            </span>
+          </div>
+          <div className="mt-2 text-sm text-orange-800 dark:text-orange-300">
+            {result.error || 'Unable to validate phone number at this time. Please try again later.'}
+          </div>
+        </div>
+      );
+    }
+
+    // Valid or Invalid Phone Number State
     return (
       <div className={`mt-3 p-4 rounded-lg border-2 ${result.valid ? 'bg-green-50 border-green-500 dark:bg-green-950/20' : 'bg-red-50 border-red-500 dark:bg-red-950/20'}`}>
         <div className="flex items-center gap-2">
@@ -99,17 +122,20 @@ export default function WidgetDemo() {
           )}
         </div>
         
-        {result.valid && (
+        {/* Show carrier and formatted numbers when available */}
+        {(result.carrier || result.formatted || result.local_format) && (
           <div className="mt-2 space-y-1">
-            <div className="text-sm text-muted-foreground">
-              Carrier: {result.carrier}
-            </div>
-            {result.formatted && result.formatted !== result.local_format && (
+            {result.carrier && result.carrier !== 'Unknown' && (
+              <div className="text-sm text-muted-foreground">
+                Carrier: {result.carrier}
+              </div>
+            )}
+            {result.formatted && (
               <div className="text-sm text-muted-foreground">
                 International: {result.formatted}
               </div>
             )}
-            {result.local_format && (
+            {result.local_format && result.local_format !== result.formatted && (
               <div className="text-sm text-muted-foreground">
                 Local format: {result.local_format}
               </div>
