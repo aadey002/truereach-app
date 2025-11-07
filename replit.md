@@ -6,7 +6,7 @@ This is a healthcare-focused phone validation application that provides three va
 
 1. **Batch Upload Validation**: Upload CSV or Excel files containing phone numbers and validate them in bulk
 2. **Real-Time Validation**: Validate individual phone numbers as users type in forms
-3. **EHR/PMS Widget**: Embeddable JavaScript widget for integration into existing healthcare systems
+3. **Healthcare Widget**: Embeddable JavaScript widget for integration into EHR and Pharmacy Management systems
 
 The application uses the Veriphone API to identify valid phone numbers, determine their type (mobile/landline/VoIP), detect SMS capability, and provide carrier information. Built as a full-stack web application with a React frontend and Express backend.
 
@@ -28,8 +28,8 @@ The application uses the Veriphone API to identify valid phone numbers, determin
 - Perfect for patient registration forms
 - Available at `/widget-demo` route
 
-### Embeddable EHR/PMS Widget
-- Drop-in JavaScript widget for external healthcare systems
+### Embeddable Widget for Healthcare Systems
+- Drop-in JavaScript widget for EHR and Pharmacy Management systems
 - No backend modifications required - just 2 lines of JavaScript
 - CORS-enabled API for cross-origin validation requests
 - Auto-attaches to phone input fields
@@ -37,6 +37,7 @@ The application uses the Veriphone API to identify valid phone numbers, determin
 - Supports validate-on-blur and validate-while-typing modes
 - Integration documentation at `/widget-integration`
 - Test page available at `/widget-test.html`
+- Works with PioneerRx, Rx30, PrimeRx, ScriptPro, EnterpriseRx, and all major pharmacy systems
 
 ## User Preferences
 
@@ -57,7 +58,7 @@ Preferred communication style: Simple, everyday language.
 **Routing**: Wouter for lightweight client-side routing with four main routes:
 - `/` - Home page (Batch Upload validation)
 - `/widget-demo` - Real-Time validation demo
-- `/widget-integration` - EHR/PMS widget documentation and integration guide
+- `/widget-integration` - Healthcare widget documentation and integration guide (EHR & Pharmacy systems)
 - `/pricing` - Pricing and plan information
 
 **Static Assets**: Public directory serves the embeddable widget:
@@ -88,7 +89,7 @@ Preferred communication style: Simple, everyday language.
 **CORS Configuration**: The `/api/validate-realtime` endpoint includes CORS headers to allow cross-origin requests from external healthcare systems:
 - `Access-Control-Allow-Origin: *` - Allows requests from any domain
 - Handles OPTIONS preflight requests for browser compatibility
-- Enables the embeddable widget to work from any EHR/PMS system
+- Enables the embeddable widget to work from any EHR or Pharmacy Management system
 
 **Data Flow (Batch Validation)**:
 1. File uploaded via multipart form data
@@ -131,7 +132,7 @@ Preferred communication style: Simple, everyday language.
 - `attach(selector, options)` - Auto-attach validation to input fields
 - `validateBatch(phones, onProgress)` - Validate multiple numbers with progress callback
 
-**Integration Pattern**: EHR/PMS systems include the widget via script tag, initialize with their API URL, and attach to existing phone input fields without modifying backend code
+**Integration Pattern**: Healthcare systems (EHR and Pharmacy Management) include the widget via script tag, initialize with their API URL, and attach to existing phone input fields without modifying backend code. Compatible with all major pharmacy systems including PioneerRx, Rx30, PrimeRx, ScriptPro, EnterpriseRx, BestRx, Liberty Software, and others.
 
 ### External Dependencies
 

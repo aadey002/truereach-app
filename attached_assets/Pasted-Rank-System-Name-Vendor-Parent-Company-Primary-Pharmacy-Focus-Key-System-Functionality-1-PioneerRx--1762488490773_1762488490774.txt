@@ -1,0 +1,21 @@
+Rank,System Name,Vendor/Parent Company,Primary Pharmacy Focus,Key System Functionality
+1,PioneerRx,RedSail Technologies,Independent/Retail,"Highly innovative, focuses on clinical services (MTM, Adherence), robust POS integration."
+2,Rx30,Transaction Data Systems (TDS),Independent/Retail & LTC,"End-to-end management, fully integrated POS, e-care, and clinical solutions."
+3,PrimeRx,Micro Merchant Systems,Independent/Retail,"All-in-one solution for core functions, strong focus on specialty and customizable workflows."
+4,ScriptPro,"ScriptPro, LLC",Workflow Automation,"Known for robotics integration, robust workflow management, and unified systems."
+5,NRx,RedSail Technologies (formerly QS/1),Independent/Retail,"Legacy system known for reliability, claims processing, and integrated POS/IVR."
+6,BestRx Pharmacy Software,BestRx,Independent/Retail & LTC,"Feature-rich, strong dedication to community pharmacies, known for great customer service."
+7,EnterpriseRx,McKesson Pharmacy Systems,Retail/Chain & Health Systems,"Cloud-based, powerful, often used by larger independent groups and smaller chains."
+8,FrameworkLTC,SoftWriters (Integra/RedSail),Long-Term Care (LTC),Specifically designed for the unique complexity of closed-door and LTC pharmacy processes.
+9,Computer-Rx,Transaction Data Systems (TDS),Independent/Retail,"Robust, true Windows-based platform, known for ease of use and advanced features."
+10,WinPharm,Integra,Retail & LTC,"Helps manage billing, sales, purchases, prescriptions, and custom eCare plans."
+11,Liberty Software,Liberty Software,Independent/Retail,"Intuitive interface, known for efficiency and simplifying daily dispensing operations."
+12,VIP Pharmacy Management,VIP Pharmacy Systems,"Retail, Specialty, Compounding","Handles reordering, accounts receivable, data management, and compounding/IVs."
+13,Axys LTC,RedSail Technologies,Long-Term Care (LTC),"Cloud-based LTC system with a focus on quick updates, scalability, and security."
+14,MicroScript,Micro Merchant Systems,Specialty/Retail,"Flexible system offering specialized solutions for smaller, growing pharmacies."
+15,Speed Script,"Speed Script, Inc.",Independent/Scalable,"Flexible and scalable systems, focus on prescription processing and integrated point-of-sale."
+16,Abacus Pharmacy Plus,Abacus Rx,Retail/Small Chain,"Helps businesses scan, process, and manage prescriptions with good inventory tools."
+17,HBS Rx,Healthcare Business Systems (HBS),Independent Pharmacy,"Offers integrated solutions for dispensing, POS, and business management."
+18,SuiteRx,SuiteRx,Independent/Small Chain,Caters to specific requirements of small chain and independent pharmacies.
+19,Millennium,Integra,LTC/Institutional,Another strong system focused on the institutional and long-term care market.
+20,Cerner Retail Pharmacy,Oracle Health (formerly Cerner),Hospital Outpatient/Retail,Used by pharmacies integrated within larger Cerner-equipped health system networks.

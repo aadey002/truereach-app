@@ -1,6 +1,6 @@
 /**
  * Phone Validator Pro - Embeddable Widget
- * Real-time phone validation for EHR and PMS systems
+ * Real-time phone validation for EHR and Pharmacy Management systems
  * 
  * Usage:
  *   <script src="https://your-domain.replit.app/phone-validator-widget.js"></script>

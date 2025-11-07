@@ -10,7 +10,7 @@ export default function WidgetIntegration() {
       <Card className="p-8 mb-8 text-center">
         <div className="flex items-center justify-center gap-3 mb-4">
           <Code2 className="w-10 h-10 text-primary" />
-          <h1 className="text-4xl font-bold">EHR/PMS Widget Integration</h1>
+          <h1 className="text-4xl font-bold">EHR/Pharmacy Management Widget Integration</h1>
         </div>
         <p className="text-lg text-muted-foreground">
           Drop-in JavaScript widget for real-time phone validation in any healthcare system
@@ -239,14 +239,27 @@ export default function WidgetIntegration() {
         <div className="flex items-start gap-3">
           <AlertCircle className="w-6 h-6 text-orange-600 flex-shrink-0 mt-1" />
           <div>
-            <h3 className="font-semibold text-lg mb-2">EHR-Specific Integration Notes</h3>
-            <ul className="space-y-2 text-sm">
-              <li><strong>Epic:</strong> Add widget to SmartForms or custom web components. Use .NET event handlers to call validate().</li>
-              <li><strong>Cerner:</strong> Inject widget into PowerForms via CCL script or custom HTML components.</li>
-              <li><strong>Allscripts:</strong> Add to TouchWorks forms using JavaScript hooks in form designer.</li>
-              <li><strong>eClinicalWorks:</strong> Use custom form fields with JavaScript validation.</li>
-              <li><strong>Practice Management Systems:</strong> Most support custom HTML/JS in patient intake forms.</li>
-            </ul>
+            <h3 className="font-semibold text-lg mb-2">System-Specific Integration Notes</h3>
+            <div className="space-y-3">
+              <div>
+                <p className="font-semibold text-sm mb-1">Electronic Health Records (EHR):</p>
+                <ul className="space-y-1 text-sm ml-4">
+                  <li><strong>Epic:</strong> Add widget to SmartForms or custom web components. Use .NET event handlers to call validate().</li>
+                  <li><strong>Cerner:</strong> Inject widget into PowerForms via CCL script or custom HTML components.</li>
+                  <li><strong>Allscripts:</strong> Add to TouchWorks forms using JavaScript hooks in form designer.</li>
+                  <li><strong>eClinicalWorks:</strong> Use custom form fields with JavaScript validation.</li>
+                </ul>
+              </div>
+              <div>
+                <p className="font-semibold text-sm mb-1">Pharmacy Management Systems:</p>
+                <ul className="space-y-1 text-sm ml-4">
+                  <li><strong>PioneerRx, Rx30, PrimeRx:</strong> Most support custom HTML/JS in patient profile forms.</li>
+                  <li><strong>ScriptPro, EnterpriseRx:</strong> Add to web-based patient intake or registration screens.</li>
+                  <li><strong>BestRx, Liberty Software:</strong> Integrate via custom form fields in patient demographics.</li>
+                  <li><strong>All Systems:</strong> Widget works in any browser-based form - no backend modifications needed.</li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       </Card>
@@ -254,7 +267,7 @@ export default function WidgetIntegration() {
       <Card className="p-8">
         <h2 className="text-2xl font-semibold mb-4">Need Help?</h2>
         <p className="text-muted-foreground mb-4">
-          Our team can help you integrate the widget into your specific EHR or PMS system.
+          Our team can help you integrate the widget into your specific EHR or Pharmacy Management system.
         </p>
         <div className="grid md:grid-cols-2 gap-4">
           <div className="p-4 border rounded-lg">
