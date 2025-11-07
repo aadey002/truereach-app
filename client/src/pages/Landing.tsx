@@ -7,16 +7,16 @@ import logoUrl from "@assets/image_1762494775992.png";
 export default function Landing() {
   return (
     <div className="max-w-7xl mx-auto">
-      <section className="text-center py-20 mb-16">
-        <div className="flex items-center justify-center mb-8">
+      <section className="text-center py-12 mb-8">
+        <div className="flex items-center justify-center mb-6">
           <img src={logoUrl} alt="TrueReach Logo" className="h-90" />
         </div>
 
-        <h1 className="text-6xl md:text-7xl font-extrabold text-foreground mb-6">
+        <h1 className="text-6xl md:text-7xl font-extrabold text-foreground mb-4">
           Stop Missed Appointments. Start True Patient Engagement.
         </h1>
 
-        <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto">
+        <p className="text-xl md:text-2xl text-muted-foreground mb-6 max-w-3xl mx-auto">
           The only patient verification tool built to help <strong>FQHCs reduce no-shows by up to 25%</strong> and maximize valuable clinical time.
         </p>
 
@@ -28,7 +28,7 @@ export default function Landing() {
           Request a Free Demo
         </a>
 
-        <div className="mt-8 flex justify-center gap-6 text-sm text-muted-foreground">
+        <div className="mt-6 flex justify-center gap-6 text-sm text-muted-foreground">
           <span className="flex items-center gap-1">
             <CheckCircle className="w-4 h-4 text-primary" /> HIPAA Compliant
           </span>
@@ -41,12 +41,12 @@ export default function Landing() {
         </div>
       </section>
 
-      <section className="py-16 mb-16">
+      <section className="py-8 mb-8">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl font-bold text-center text-foreground mb-10">
+          <h2 className="text-3xl font-bold text-center text-foreground mb-6">
             How It Works: Verification That Fits Your Workflow
           </h2>
-          <p className="text-lg text-center text-muted-foreground mb-12 max-w-4xl mx-auto">
+          <p className="text-lg text-center text-muted-foreground mb-8 max-w-4xl mx-auto">
             TrueReach converts bad data into reliable connections using two powerful modes to support every team and every process.
           </p>
           
@@ -90,7 +90,7 @@ export default function Landing() {
             </Card>
           </div>
 
-          <div className="text-center mt-12 pt-8 border-t">
+          <div className="text-center mt-8 pt-6 border-t">
             <h3 className="text-xl font-semibold text-foreground mb-2">3. Connect & Care!</h3>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
               Verified data is automatically pushed or securely loaded back into your EHR/PMS, ensuring your vital communications <strong>reach the right person, right now,</strong> helping you close care gaps and save lives.
@@ -99,9 +99,9 @@ export default function Landing() {
         </div>
       </section>
 
-      <section className="py-16 mb-16">
+      <section className="py-8 mb-8">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-center text-foreground mb-10">
+          <h2 className="text-3xl font-bold text-center text-foreground mb-6">
             The FQHC Value Proposition: The Power of Valid Data
           </h2>
           
@@ -130,8 +130,8 @@ export default function Landing() {
         </div>
       </section>
 
-      <section id="get-started" className="mb-16">
-        <h2 className="text-3xl font-bold text-center mb-12">Three Powerful Ways to Validate</h2>
+      <section id="get-started" className="mb-8">
+        <h2 className="text-3xl font-bold text-center mb-6">Three Powerful Ways to Validate</h2>
         
         <div className="grid md:grid-cols-3 gap-8">
           <Card className="p-8 hover-elevate">
@@ -232,11 +232,11 @@ export default function Landing() {
         </div>
       </section>
 
-      <section className="mb-16">
-        <Card className="p-12 bg-primary/5">
+      <section className="mb-8">
+        <Card className="p-8 bg-primary/5">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-3xl font-bold mb-4">Why Phone Validation Matters</h2>
-            <p className="text-lg text-muted-foreground mb-8">
+            <p className="text-lg text-muted-foreground mb-6">
               Invalid phone numbers cost healthcare organizations thousands in missed appointments, 
               failed medication reminders, and lost patient engagement opportunities.
             </p>
@@ -259,9 +259,9 @@ export default function Landing() {
         </Card>
       </section>
 
-      <section className="text-center py-12">
+      <section className="text-center py-8">
         <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
-        <p className="text-lg text-muted-foreground mb-8">
+        <p className="text-lg text-muted-foreground mb-6">
           Choose the validation method that works best for your organization.
         </p>
         <div className="flex gap-4 justify-center">
