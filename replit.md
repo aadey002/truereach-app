@@ -2,7 +2,30 @@
 
 ## Overview
 
-This is a healthcare-focused phone validation application that allows users to upload CSV or Excel files containing phone numbers and validate them using the Veriphone API. The application identifies valid phone numbers, determines their type (mobile/landline), and flags which numbers can receive SMS messages. Built as a full-stack web application with a React frontend and Express backend, it provides an intuitive interface for bulk phone number validation with detailed reporting.
+This is a healthcare-focused phone validation application that provides two validation modes:
+
+1. **Batch Upload Validation**: Upload CSV or Excel files containing phone numbers and validate them in bulk
+2. **Real-Time Validation**: Validate individual phone numbers as users type in forms
+
+The application uses the Veriphone API to identify valid phone numbers, determine their type (mobile/landline/VoIP), detect SMS capability, and provide carrier information. Built as a full-stack web application with a React frontend and Express backend.
+
+## Features
+
+### Batch Validation (Main App)
+- Upload CSV and Excel files (.csv, .xlsx, .xls)
+- Automatic phone column detection
+- Validates all phone numbers in the file
+- Summary dashboard showing valid/invalid counts and SMS-capable numbers
+- Detailed results table with phone type and carrier information
+- Rate limiting to respect API quotas
+
+### Real-Time Validation (Widget Demo)
+- Instant validation as users complete form fields
+- Detailed response with formatted phone numbers
+- Smart warnings for landlines, VoIP numbers, and invalid entries
+- Auto-formatting of phone numbers
+- Perfect for patient registration forms
+- Available at `/widget-demo` route
 
 ## User Preferences
 
@@ -38,14 +61,22 @@ Preferred communication style: Simple, everyday language.
 - Papa Parse for CSV parsing
 - XLSX library for Excel file processing
 
-**API Design**: RESTful API with a single validation endpoint (`POST /api/validate`) that accepts file uploads and returns validation results
+**API Design**: RESTful API with two main validation endpoints:
+- `POST /api/validate` - Batch validation via file upload (CSV/Excel)
+- `POST /api/validate-realtime` - Real-time validation of single phone numbers
 
-**Data Flow**:
+**Data Flow (Batch Validation)**:
 1. File uploaded via multipart form data
 2. File parsed based on type (CSV vs Excel)
-3. Phone numbers extracted from first column
-4. Each number validated against Veriphone API
+3. Phone numbers extracted from phone column (or first column)
+4. Each number validated against Veriphone API with rate limiting
 5. Results aggregated and returned as JSON
+
+**Data Flow (Real-Time Validation)**:
+1. Single phone number submitted via JSON request
+2. Number validated against Veriphone API
+3. Detailed response returned including formatted number, warnings, and carrier info
+4. Can be integrated into forms for instant validation
 
 **Error Handling**: Centralized error handling with appropriate HTTP status codes and descriptive error messages
 
