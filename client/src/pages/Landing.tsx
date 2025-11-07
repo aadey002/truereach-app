@@ -8,11 +8,11 @@ export default function Landing() {
   return (
     <div className="max-w-7xl mx-auto">
       <section className="text-center py-20 mb-16">
-        <div className="flex items-center justify-center mb-6">
-          <img src={logoUrl} alt="TrueReach Logo" className="h-12 mr-3" />
+        <div className="flex items-center justify-center mb-8">
+          <img src={logoUrl} alt="TrueReach Logo" className="h-32" />
         </div>
 
-        <h1 className="text-5xl md:text-6xl font-extrabold text-foreground mb-4">
+        <h1 className="text-6xl md:text-7xl font-extrabold text-foreground mb-6">
           Stop Missed Appointments. Start True Patient Engagement.
         </h1>
 
@@ -38,6 +38,64 @@ export default function Landing() {
           <span className="flex items-center gap-1">
             <CheckCircle className="w-4 h-4 text-primary" /> FQHC Focused
           </span>
+        </div>
+      </section>
+
+      <section className="py-16 mb-16">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-3xl font-bold text-center text-foreground mb-10">
+            How It Works: Verification That Fits Your Workflow
+          </h2>
+          <p className="text-lg text-center text-muted-foreground mb-12 max-w-4xl mx-auto">
+            TrueReach converts bad data into reliable connections using two powerful modes to support every team and every process.
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <Card className="p-6 border-primary/20">
+              <h3 className="text-2xl font-semibold text-primary mb-3">1. Real-Time Widget</h3>
+              <p className="text-sm font-medium text-muted-foreground mb-4">Target User: Front-Desk / Call Center Staff</p>
+              <ul className="space-y-2 text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                  <span><strong>Instant Check at Registration:</strong> Use our light, secure widget to verify a new patient's number while they are on the phone or checking in.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                  <span><strong>Stop Bad Data:</strong> Eliminates data entry errors before the information enters your EHR.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                  <span><strong>Seamless Workflow:</strong> Designed to integrate without interrupting your existing front-end process.</span>
+                </li>
+              </ul>
+            </Card>
+
+            <Card className="p-6 border-primary/20">
+              <h3 className="text-2xl font-semibold text-primary mb-3">2. Batch Upload</h3>
+              <p className="text-sm font-medium text-muted-foreground mb-4">Target User: IT / Operations Teams</p>
+              <ul className="space-y-2 text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                  <span><strong>Proactive Database Cleanup:</strong> Upload your entire patient list or targeted cohorts for a full database scrub.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                  <span><strong>Campaign Ready:</strong> Delivers a clean file for mass outreach campaigns and quarterly data audits.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                  <span><strong>Maximize Reach:</strong> Ensure all overdue patients and care gap alerts reach the intended recipient.</span>
+                </li>
+              </ul>
+            </Card>
+          </div>
+
+          <div className="text-center mt-12 pt-8 border-t">
+            <h3 className="text-xl font-semibold text-foreground mb-2">3. Connect & Care!</h3>
+            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+              Verified data is automatically pushed or securely loaded back into your EHR/PMS, ensuring your vital communications <strong>reach the right person, right now,</strong> helping you close care gaps and save lives.
+            </p>
+          </div>
         </div>
       </section>
 
