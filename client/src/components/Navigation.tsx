@@ -18,9 +18,7 @@ export function Navigation() {
       <nav className="p-4">
         <div className="flex justify-between items-center">
           <Link href="/">
-            <a className="flex items-center">
-              <img src={logoUrl} alt="TrueReach" className="h-12" />
-            </a>
+            <img src={logoUrl} alt="TrueReach" className="h-12 cursor-pointer" />
           </Link>
           <div className="flex gap-2">
             {links.map(({ href, label, icon: Icon }) => (
@@ -28,9 +26,9 @@ export function Navigation() {
                 key={href}
                 href={href}
               >
-                <a
+                <span
                   data-testid={`link-nav-${label.toLowerCase().replace(/\s+/g, '-')}`}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-md font-semibold transition-colors hover-elevate ${
+                  className={`flex items-center gap-2 px-4 py-2 rounded-md font-semibold transition-colors hover-elevate cursor-pointer ${
                     location === href
                       ? "bg-primary text-primary-foreground"
                       : "text-muted-foreground"
@@ -38,7 +36,7 @@ export function Navigation() {
                 >
                   <Icon className="w-4 h-4" />
                   {label}
-                </a>
+                </span>
               </Link>
             ))}
           </div>
