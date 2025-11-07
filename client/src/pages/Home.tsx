@@ -2,88 +2,68 @@ import { useState } from "react";
 import { Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 import FileUpload from "@/components/FileUpload";
 import ValidationResults, { PhoneValidationResult } from "@/components/ValidationResults";
 import LoadingState from "@/components/LoadingState";
+
+interface ValidationResponse {
+  details: PhoneValidationResult[];
+  valid_count: number;
+  invalid_count: number;
+  sms_count: number;
+}
 
 export default function Home() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [results, setResults] = useState<PhoneValidationResult[] | null>(null);
   const [stats, setStats] = useState<{ valid: number; invalid: number; sms: number } | null>(null);
+  const { toast } = useToast();
 
-  // todo: remove mock functionality - replace with actual API call
-  const handleValidation = () => {
+  const handleValidation = async () => {
     if (!selectedFile) return;
 
     setIsValidating(true);
     setResults(null);
 
-    // Simulate API call
-    setTimeout(() => {
-      const mockResults: PhoneValidationResult[] = [
-        {
-          phone: '555-123-4567',
-          valid: true,
-          phone_type: 'mobile',
-          can_receive_sms: true,
-          carrier: 'Verizon'
-        },
-        {
-          phone: '(555) 234-5678',
-          valid: true,
-          phone_type: 'landline',
-          can_receive_sms: false,
-          carrier: 'AT&T'
-        },
-        {
-          phone: '555-345-6789',
-          valid: false,
-          phone_type: 'unknown',
-          can_receive_sms: false,
-          carrier: 'Unknown'
-        },
-        {
-          phone: '+1-555-456-7890',
-          valid: true,
-          phone_type: 'mobile',
-          can_receive_sms: true,
-          carrier: 'T-Mobile'
-        },
-        {
-          phone: '555.567.8901',
-          valid: true,
-          phone_type: 'mobile',
-          can_receive_sms: true,
-          carrier: 'Sprint'
-        },
-        {
-          phone: '555-678-9012',
-          valid: true,
-          phone_type: 'voip',
-          can_receive_sms: false,
-          carrier: 'Google Voice'
-        },
-        {
-          phone: 'invalid',
-          valid: false,
-          phone_type: 'error',
-          can_receive_sms: false,
-          carrier: 'Error'
-        }
-      ];
+    try {
+      const formData = new FormData();
+      formData.append('file', selectedFile);
 
-      const validCount = mockResults.filter(r => r.valid).length;
-      const smsCount = mockResults.filter(r => r.can_receive_sms).length;
-
-      setResults(mockResults);
-      setStats({
-        valid: validCount,
-        invalid: mockResults.length - validCount,
-        sms: smsCount
+      const response = await fetch('/api/validate', {
+        method: 'POST',
+        body: formData,
       });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Validation failed');
+      }
+
+      const data: ValidationResponse = await response.json();
+
+      setResults(data.details);
+      setStats({
+        valid: data.valid_count,
+        invalid: data.invalid_count,
+        sms: data.sms_count
+      });
+
+      toast({
+        title: "Validation Complete",
+        description: `Validated ${data.details.length} phone numbers successfully.`,
+      });
+    } catch (error) {
+      console.error('Validation error:', error);
+      toast({
+        variant: "destructive",
+        title: "Validation Failed",
+        description: error instanceof Error ? error.message : "An error occurred during validation",
+      });
+    } finally {
       setIsValidating(false);
-    }, 2000);
+    }
   };
 
   return (
