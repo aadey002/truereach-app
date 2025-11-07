@@ -57,8 +57,9 @@ Preferred communication style: Simple, everyday language.
 
 **State Management**: TanStack Query (React Query) for server state management and data fetching
 
-**Routing**: Wouter for lightweight client-side routing with four main routes:
-- `/` - Home page (Batch Upload validation)
+**Routing**: Wouter for lightweight client-side routing with five main routes:
+- `/` - Landing page with hero section and feature overview
+- `/batch` - Batch Upload validation for CSV/Excel files
 - `/widget-demo` - Real-Time validation demo
 - `/widget-integration` - Healthcare widget documentation and integration guide (EHR & Pharmacy systems)
 - `/pricing` - Pricing and plan information
