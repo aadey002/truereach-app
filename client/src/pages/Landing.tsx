@@ -7,13 +7,41 @@ import logoUrl from "@assets/truereach-logo-full.png";
 export default function Landing() {
   return (
     <div className="max-w-7xl mx-auto">
-      <section className="text-center py-12 mb-16">
-        <div className="flex justify-center mb-12">
-          <img src={logoUrl} alt="TrueReach - Verify. Connect. Care!" className="h-40" />
+      <section className="text-center py-20 mb-16">
+        <div className="flex items-center justify-center mb-6">
+          <img src={logoUrl} alt="TrueReach Logo" className="h-12 mr-3" />
+        </div>
+
+        <h1 className="text-5xl md:text-6xl font-extrabold text-foreground mb-4">
+          Stop Missed Appointments. Start True Patient Engagement.
+        </h1>
+
+        <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto">
+          The only patient verification tool built to help <strong>FQHCs reduce no-shows by up to 25%</strong> and maximize valuable clinical time.
+        </p>
+
+        <a 
+          href="#get-started" 
+          className="inline-block bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 px-8 rounded-full shadow-lg transition duration-300"
+          data-testid="button-request-demo"
+        >
+          Request a Free Demo
+        </a>
+
+        <div className="mt-8 flex justify-center gap-6 text-sm text-muted-foreground">
+          <span className="flex items-center gap-1">
+            <CheckCircle className="w-4 h-4 text-primary" /> HIPAA Compliant
+          </span>
+          <span className="flex items-center gap-1">
+            <CheckCircle className="w-4 h-4 text-primary" /> EHR Integrated
+          </span>
+          <span className="flex items-center gap-1">
+            <CheckCircle className="w-4 h-4 text-primary" /> FQHC Focused
+          </span>
         </div>
       </section>
 
-      <section className="mb-16">
+      <section id="get-started" className="mb-16">
         <h2 className="text-3xl font-bold text-center mb-12">Three Powerful Ways to Validate</h2>
         
         <div className="grid md:grid-cols-3 gap-8">
