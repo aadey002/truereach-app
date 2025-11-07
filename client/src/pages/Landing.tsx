@@ -7,28 +7,28 @@ import logoUrl from "@assets/image_1762494775992.png";
 export default function Landing() {
   return (
     <div className="max-w-7xl mx-auto">
-      <section className="text-center pt-4 pb-8 mb-8">
-        <div className="flex items-center justify-center">
+      <section className="text-center pt-2 pb-8 mb-8">
+        <div className="flex items-center justify-center -mb-4">
           <img src={logoUrl} alt="TrueReach Logo" className="h-90" />
         </div>
 
-        <div className="flex justify-center -mt-2">
-          <svg width="60" height="30" viewBox="0 0 60 30" className="text-primary">
+        <div className="flex justify-center -mb-4">
+          <svg width="60" height="25" viewBox="0 0 60 25" className="text-primary">
             <path
-              d="M 30 2 Q 37 8, 40 15 T 33 25"
+              d="M 30 2 Q 37 6, 40 12 T 33 20"
               stroke="currentColor"
               strokeWidth="2.5"
               fill="none"
               strokeLinecap="round"
             />
             <path
-              d="M 33 25 L 28 27 L 31 21"
+              d="M 33 20 L 28 22 L 31 17"
               fill="currentColor"
             />
           </svg>
         </div>
 
-        <h1 className="text-6xl md:text-7xl font-extrabold text-foreground mb-4 -mt-2">
+        <h1 className="text-6xl md:text-7xl font-extrabold text-foreground mb-4">
           Stop Missed Appointments. Start True Patient Engagement.
         </h1>
 
