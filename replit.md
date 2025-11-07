@@ -43,14 +43,18 @@ Preferred communication style: Simple, everyday language.
 
 **State Management**: TanStack Query (React Query) for server state management and data fetching
 
-**Routing**: Wouter for lightweight client-side routing
+**Routing**: Wouter for lightweight client-side routing with three main routes:
+- `/` - Home page (Batch Upload validation)
+- `/widget-demo` - Real-Time validation demo
+- `/pricing` - Pricing and plan information
 
 **Key Design Decisions**:
 - Component-based architecture with reusable UI components in `client/src/components/ui/`
-- Custom components for domain-specific functionality (FileUpload, ValidationResults, LoadingState)
+- Custom components for domain-specific functionality (FileUpload, ValidationResults, LoadingState, Navigation)
 - Type-safe props using TypeScript interfaces
 - Responsive design with mobile-first approach using Tailwind breakpoints
 - Toast notifications for user feedback
+- Global navigation bar for easy access to all features
 
 ### Backend Architecture
 
