@@ -1,18 +1,19 @@
-import { sql } from "drizzle-orm";
-import { pgTable, text, varchar } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+export const phoneValidationResultSchema = z.object({
+  phone: z.string(),
+  valid: z.boolean(),
+  phone_type: z.string(),
+  can_receive_sms: z.boolean(),
+  carrier: z.string(),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
+export const validationResponseSchema = z.object({
+  details: z.array(phoneValidationResultSchema),
+  valid_count: z.number(),
+  invalid_count: z.number(),
+  sms_count: z.number(),
 });
 
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
+export type PhoneValidationResult = z.infer<typeof phoneValidationResultSchema>;
+export type ValidationResponse = z.infer<typeof validationResponseSchema>;
