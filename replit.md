@@ -2,10 +2,11 @@
 
 ## Overview
 
-This is a healthcare-focused phone validation application that provides two validation modes:
+This is a healthcare-focused phone validation application that provides three validation modes:
 
 1. **Batch Upload Validation**: Upload CSV or Excel files containing phone numbers and validate them in bulk
 2. **Real-Time Validation**: Validate individual phone numbers as users type in forms
+3. **EHR/PMS Widget**: Embeddable JavaScript widget for integration into existing healthcare systems
 
 The application uses the Veriphone API to identify valid phone numbers, determine their type (mobile/landline/VoIP), detect SMS capability, and provide carrier information. Built as a full-stack web application with a React frontend and Express backend.
 
@@ -27,6 +28,16 @@ The application uses the Veriphone API to identify valid phone numbers, determin
 - Perfect for patient registration forms
 - Available at `/widget-demo` route
 
+### Embeddable EHR/PMS Widget
+- Drop-in JavaScript widget for external healthcare systems
+- No backend modifications required - just 2 lines of JavaScript
+- CORS-enabled API for cross-origin validation requests
+- Auto-attaches to phone input fields
+- Inline validation results with customizable CSS
+- Supports validate-on-blur and validate-while-typing modes
+- Integration documentation at `/widget-integration`
+- Test page available at `/widget-test.html`
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
@@ -43,10 +54,15 @@ Preferred communication style: Simple, everyday language.
 
 **State Management**: TanStack Query (React Query) for server state management and data fetching
 
-**Routing**: Wouter for lightweight client-side routing with three main routes:
+**Routing**: Wouter for lightweight client-side routing with four main routes:
 - `/` - Home page (Batch Upload validation)
 - `/widget-demo` - Real-Time validation demo
+- `/widget-integration` - EHR/PMS widget documentation and integration guide
 - `/pricing` - Pricing and plan information
+
+**Static Assets**: Public directory serves the embeddable widget:
+- `/phone-validator-widget.js` - Standalone JavaScript widget file
+- `/widget-test.html` - Live test page demonstrating widget functionality
 
 **Key Design Decisions**:
 - Component-based architecture with reusable UI components in `client/src/components/ui/`
@@ -67,7 +83,12 @@ Preferred communication style: Simple, everyday language.
 
 **API Design**: RESTful API with two main validation endpoints:
 - `POST /api/validate` - Batch validation via file upload (CSV/Excel)
-- `POST /api/validate-realtime` - Real-time validation of single phone numbers
+- `POST /api/validate-realtime` - Real-time validation of single phone numbers (CORS-enabled)
+
+**CORS Configuration**: The `/api/validate-realtime` endpoint includes CORS headers to allow cross-origin requests from external healthcare systems:
+- `Access-Control-Allow-Origin: *` - Allows requests from any domain
+- Handles OPTIONS preflight requests for browser compatibility
+- Enables the embeddable widget to work from any EHR/PMS system
 
 **Data Flow (Batch Validation)**:
 1. File uploaded via multipart form data
@@ -93,6 +114,24 @@ Preferred communication style: Simple, everyday language.
 **Session Management**: Infrastructure exists for session storage (`connect-pg-simple`) but is not currently utilized
 
 **Design Decision**: The application was designed to be stateless for simplicity, with the option to add persistent storage for validation history, user accounts, or API usage tracking in the future
+
+### Widget Architecture
+
+**Embeddable Widget**: Standalone JavaScript file (`public/phone-validator-widget.js`) that provides:
+- Global `window.PhoneValidatorWidget` API
+- Zero dependencies - works in any HTML page
+- Self-contained CSS injection for inline validation UI
+- Configurable validation modes (blur, typing)
+- Batch validation support
+- Rate limiting and debouncing built-in
+
+**Widget API Methods**:
+- `init(options)` - Initialize with API URL and configuration
+- `validate(phone)` - Manually validate a single phone number
+- `attach(selector, options)` - Auto-attach validation to input fields
+- `validateBatch(phones, onProgress)` - Validate multiple numbers with progress callback
+
+**Integration Pattern**: EHR/PMS systems include the widget via script tag, initialize with their API URL, and attach to existing phone input fields without modifying backend code
 
 ### External Dependencies
 
