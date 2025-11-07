@@ -99,6 +99,37 @@ export default function Landing() {
         </div>
       </section>
 
+      <section className="py-16 mb-16">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-bold text-center text-foreground mb-10">
+            The FQHC Value Proposition: The Power of Valid Data
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+            <div className="p-6">
+              <h3 className="text-xl font-semibold text-foreground mb-3">Boost Revenue Cycle</h3>
+              <p className="text-muted-foreground">
+                Every verified appointment is a scheduled billable encounter. Lower no-show rates directly lead to higher daily revenue capture under the <strong>PPS model</strong>.
+              </p>
+            </div>
+
+            <div className="p-6">
+              <h3 className="text-xl font-semibold text-foreground mb-3">Improve Quality Metrics</h3>
+              <p className="text-muted-foreground">
+                Guaranteed patient contact for preventive screenings and <strong>Chronic Care Management (CCM)</strong> improves UDS and HEDIS measures, supporting Value-Based Care goals.
+              </p>
+            </div>
+            
+            <div className="p-6">
+              <h3 className="text-xl font-semibold text-foreground mb-3">Increase Staff Efficiency</h3>
+              <p className="text-muted-foreground">
+                Free your staff from the endless cycle of "phone tag." Automation lets your team focus on patient support, not manual data verification.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section id="get-started" className="mb-16">
         <h2 className="text-3xl font-bold text-center mb-12">Three Powerful Ways to Validate</h2>
         
