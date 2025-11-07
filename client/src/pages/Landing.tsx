@@ -12,6 +12,22 @@ export default function Landing() {
           <img src={logoUrl} alt="TrueReach Logo" className="h-90" />
         </div>
 
+        <div className="flex justify-center mb-6">
+          <svg width="120" height="80" viewBox="0 0 120 80" className="text-primary">
+            <path
+              d="M 60 10 Q 80 20, 90 40 T 70 70"
+              stroke="currentColor"
+              strokeWidth="4"
+              fill="none"
+              strokeLinecap="round"
+            />
+            <path
+              d="M 70 70 L 60 75 L 68 63"
+              fill="currentColor"
+            />
+          </svg>
+        </div>
+
         <h1 className="text-6xl md:text-7xl font-extrabold text-foreground mb-4">
           Stop Missed Appointments. Start True Patient Engagement.
         </h1>
