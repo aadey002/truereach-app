@@ -7,35 +7,6 @@ import logoUrl from "@assets/truereach-logo-full.png";
 export default function Landing() {
   return (
     <div className="max-w-7xl mx-auto">
-      <section className="text-center py-16 mb-12">
-        <div className="flex justify-center mb-8">
-          <img src={logoUrl} alt="TrueReach - Verify. Connect. Care!" className="h-32" />
-        </div>
-        
-        <h1 className="text-5xl font-bold mb-6 text-foreground">
-          Healthcare Phone Validation Made Simple
-        </h1>
-        
-        <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-          Validate phone numbers, identify SMS-capable contacts, and ensure accurate patient communication 
-          across your entire healthcare organization.
-        </p>
-
-        <div className="flex gap-4 justify-center">
-          <Link href="/batch">
-            <Button size="lg" data-testid="button-get-started">
-              Get Started
-              <ArrowRight className="ml-2 w-4 h-4" />
-            </Button>
-          </Link>
-          <Link href="/pricing">
-            <Button size="lg" variant="outline" data-testid="button-view-pricing">
-              View Pricing
-            </Button>
-          </Link>
-        </div>
-      </section>
-
       <section className="mb-16">
         <h2 className="text-3xl font-bold text-center mb-12">Three Powerful Ways to Validate</h2>
         
@@ -172,8 +143,9 @@ export default function Landing() {
         </p>
         <div className="flex gap-4 justify-center">
           <Link href="/batch">
-            <Button size="lg" data-testid="button-start-batch">
-              Start with Batch Upload
+            <Button size="lg" data-testid="button-get-started">
+              Get Started
+              <ArrowRight className="ml-2 w-4 h-4" />
             </Button>
           </Link>
           <Link href="/pricing">
