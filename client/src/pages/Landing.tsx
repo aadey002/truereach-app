@@ -8,21 +8,21 @@ export default function Landing() {
   return (
     <div className="max-w-7xl mx-auto">
       <section className="text-center py-12 mb-8">
-        <div className="flex items-center justify-center mb-3">
+        <div className="flex items-center justify-center mb-1">
           <img src={logoUrl} alt="TrueReach Logo" className="h-90" />
         </div>
 
-        <div className="flex justify-center mb-3">
-          <svg width="80" height="60" viewBox="0 0 80 60" className="text-primary">
+        <div className="flex justify-center mb-1">
+          <svg width="60" height="40" viewBox="0 0 60 40" className="text-primary">
             <path
-              d="M 40 5 Q 50 15, 55 30 T 45 50"
+              d="M 30 2 Q 37 10, 40 20 T 33 35"
               stroke="currentColor"
-              strokeWidth="3"
+              strokeWidth="2.5"
               fill="none"
               strokeLinecap="round"
             />
             <path
-              d="M 45 50 L 38 53 L 43 43"
+              d="M 33 35 L 28 37 L 31 30"
               fill="currentColor"
             />
           </svg>
