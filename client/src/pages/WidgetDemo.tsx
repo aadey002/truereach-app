@@ -37,7 +37,18 @@ export default function WidgetDemo() {
         body: JSON.stringify({ phone, country: 'US' })
       });
 
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Validation service unavailable');
+      }
+
       const result = await response.json();
+      
+      // Check for backend errors in the response
+      if (result.error) {
+        throw new Error(result.error);
+      }
+      
       setResult(result);
     } catch (error) {
       console.error('Validation error:', error);
@@ -45,8 +56,8 @@ export default function WidgetDemo() {
         valid: false,
         phone_type: 'error',
         can_receive_sms: false,
-        carrier: 'Error',
-        warnings: ['Validation failed']
+        carrier: 'Service Error',
+        warnings: [error instanceof Error ? error.message : 'Validation service unavailable - please try again later']
       });
     } finally {
       setLoading(false);
@@ -89,8 +100,20 @@ export default function WidgetDemo() {
         </div>
         
         {result.valid && (
-          <div className="mt-2 text-sm text-muted-foreground">
-            Carrier: {result.carrier}
+          <div className="mt-2 space-y-1">
+            <div className="text-sm text-muted-foreground">
+              Carrier: {result.carrier}
+            </div>
+            {result.formatted && result.formatted !== result.local_format && (
+              <div className="text-sm text-muted-foreground">
+                International: {result.formatted}
+              </div>
+            )}
+            {result.local_format && (
+              <div className="text-sm text-muted-foreground">
+                Local format: {result.local_format}
+              </div>
+            )}
           </div>
         )}
 
