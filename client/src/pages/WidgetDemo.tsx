@@ -158,9 +158,8 @@ export default function WidgetDemo() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/20 via-primary/5 to-background">
-      <div className="container mx-auto px-4 py-8 max-w-5xl">
-        <Card className="p-8 mb-8">
+    <div className="max-w-5xl mx-auto">
+      <Card className="p-8 mb-8">
           <div className="flex items-center gap-3 mb-4">
             <Smartphone className="w-10 h-10 text-primary" />
             <div>
@@ -277,7 +276,6 @@ export default function WidgetDemo() {
             </div>
           </div>
         </Card>
-      </div>
     </div>
   );
 }
