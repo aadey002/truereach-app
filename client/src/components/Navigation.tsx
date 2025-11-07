@@ -24,9 +24,9 @@ export function Navigation() {
               <Link
                 key={href}
                 href={href}
-                data-testid={`link-nav-${label.toLowerCase().replace(/\s+/g, '-')}`}
               >
                 <a
+                  data-testid={`link-nav-${label.toLowerCase().replace(/\s+/g, '-')}`}
                   className={`flex items-center gap-2 px-4 py-2 rounded-md font-semibold transition-colors hover-elevate ${
                     location === href
                       ? "bg-primary text-primary-foreground"
