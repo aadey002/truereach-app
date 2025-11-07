@@ -1,6 +1,6 @@
 /**
  * TrueReach - Phone Validation Widget
- * Verifying connections, providing care
+ * Verify. Connect. Care!
  * Real-time phone validation for EHR and Pharmacy Management systems
  * 
  * Usage:

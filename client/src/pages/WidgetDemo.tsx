@@ -164,9 +164,6 @@ export default function WidgetDemo() {
             <Smartphone className="w-10 h-10 text-primary" />
             <div>
               <h1 className="text-4xl font-bold">Real-Time Phone Validation Demo</h1>
-              <p className="text-lg text-muted-foreground mt-2">
-                Verifying connections, providing care
-              </p>
               <p className="text-muted-foreground mt-2">
                 This demonstrates how the phone validator works in real-time as you type.
                 Perfect for integrating into patient registration forms!

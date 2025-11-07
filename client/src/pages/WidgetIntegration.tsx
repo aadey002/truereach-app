@@ -12,9 +12,6 @@ export default function WidgetIntegration() {
           <Code2 className="w-10 h-10 text-primary" />
           <h1 className="text-4xl font-bold">EHR/Pharmacy Management Widget Integration</h1>
         </div>
-        <p className="text-lg text-muted-foreground">
-          Verifying connections, providing care
-        </p>
         <p className="text-muted-foreground mt-2">
           Drop-in JavaScript widget for real-time phone validation in any healthcare system
         </p>

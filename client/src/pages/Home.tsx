@@ -71,9 +71,6 @@ export default function Home() {
       <Card className="p-8 mb-8 text-center">
           <div className="flex flex-col items-center justify-center gap-3 mb-4">
             <h1 className="text-4xl font-bold text-foreground">Batch Phone Validation</h1>
-            <p className="text-lg text-muted-foreground">
-              Verifying connections, providing care
-            </p>
           </div>
           <p className="text-muted-foreground">
             Upload CSV or Excel files to validate phone numbers and identify SMS-capable contacts

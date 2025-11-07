@@ -1,6 +1,6 @@
 # TrueReach - Healthcare Phone Validation
 
-**Tagline**: Verifying connections, providing care
+**Tagline**: Verify. Connect. Care!
 
 ## Overview
 
