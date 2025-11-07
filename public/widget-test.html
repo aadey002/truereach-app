@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phone Validator Widget - Test Page</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      padding: 40px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+
+    h1 {
+      color: #667eea;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+    }
+
+    .form-group {
+      margin-bottom: 30px;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #333;
+    }
+
+    input[type="tel"],
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      transition: border-color 0.3s;
+    }
+
+    input[type="tel"]:focus,
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #764ba2;
+    }
+
+    .status-box {
+      background: #f7fafc;
+      padding: 20px;
+      border-radius: 8px;
+      margin-top: 30px;
+      border-left: 4px solid #667eea;
+    }
+
+    .status-box h3 {
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    #status {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .badge {
+      display: inline-block;
+      background: #48bb78;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📞 Phone Validator Widget Test</h1>
+    <p class="subtitle">This page demonstrates the embeddable widget in action</p>
+
+    <form id="test-form">
+      <div class="form-group">
+        <label for="patient-name">Patient Name:</label>
+        <input type="text" id="patient-name" placeholder="John Doe" required>
+      </div>
+
+      <div class="form-group">
+        <label for="patient-phone">
+          Patient Phone Number:
+          <span class="badge">Auto-validates on blur</span>
+        </label>
+        <input 
+          type="tel" 
+          id="patient-phone" 
+          placeholder="(555) 123-4567" 
+          required
+          data-testid="input-test-phone"
+        >
+        <!-- Validation result will appear here automatically -->
+      </div>
+
+      <div class="form-group">
+        <label for="emergency-phone">Emergency Contact Phone:</label>
+        <input 
+          type="tel" 
+          id="emergency-phone" 
+          placeholder="555-234-5678"
+          data-testid="input-emergency-phone"
+        >
+        <!-- Validation result will appear here automatically -->
+      </div>
+
+      <button type="submit">Submit Patient Registration</button>
+    </form>
+
+    <div class="status-box">
+      <h3>Widget Status</h3>
+      <div id="status">Loading widget...</div>
+    </div>
+  </div>
+
+  <!-- Include the Phone Validator Widget -->
+  <script src="/phone-validator-widget.js"></script>
+
+  <script>
+    // Get current origin
+    const apiUrl = window.location.origin;
+
+    // Log to status box
+    function logStatus(message) {
+      document.getElementById('status').innerHTML += '<br>' + message;
+      console.log('[Widget Test]', message);
+    }
+
+    // Initialize the widget
+    try {
+      PhoneValidatorWidget.init({
+        apiUrl: apiUrl,
+        country: 'US',
+        debounceMs: 500
+      });
+      logStatus('✓ Widget initialized successfully');
+      logStatus(`✓ API URL: ${apiUrl}`);
+    } catch (error) {
+      logStatus('✗ Widget initialization failed: ' + error.message);
+    }
+
+    // Attach to patient phone field
+    try {
+      PhoneValidatorWidget.attach('#patient-phone', {
+        validateOnBlur: true,
+        showInline: true,
+        onValidate: function(result, element) {
+          logStatus(`Patient phone validation: ${result.valid ? '✓ Valid' : '✗ Invalid'} (${result.phoneType || 'unknown'})`);
+          
+          if (!result.valid) {
+            element.setCustomValidity('Please enter a valid phone number');
+          } else {
+            element.setCustomValidity('');
+            
+            if (!result.canReceiveSms) {
+              logStatus(`⚠️ Warning: ${result.phoneType} cannot receive SMS`);
+            }
+          }
+        }
+      });
+      logStatus('✓ Attached to patient phone field');
+    } catch (error) {
+      logStatus('✗ Failed to attach to patient phone: ' + error.message);
+    }
+
+    // Attach to emergency phone field
+    try {
+      PhoneValidatorWidget.attach('#emergency-phone', {
+        validateOnBlur: true,
+        showInline: true,
+        onValidate: function(result) {
+          logStatus(`Emergency phone validation: ${result.valid ? '✓ Valid' : '✗ Invalid'}`);
+        }
+      });
+      logStatus('✓ Attached to emergency phone field');
+    } catch (error) {
+      logStatus('✗ Failed to attach to emergency phone: ' + error.message);
+    }
+
+    // Handle form submission
+    document.getElementById('test-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      logStatus('--- Form Submission ---');
+      const patientPhone = document.getElementById('patient-phone').value;
+      
+      // Manually validate before submission
+      try {
+        const result = await PhoneValidatorWidget.validate(patientPhone);
+        
+        if (!result.valid) {
+          alert('Please enter a valid phone number before submitting');
+          logStatus('✗ Form validation failed: Invalid phone number');
+          return;
+        }
+        
+        logStatus(`✓ Form validation passed`);
+        logStatus(`  - Phone: ${result.formatted}`);
+        logStatus(`  - Type: ${result.phoneType}`);
+        logStatus(`  - Carrier: ${result.carrier}`);
+        logStatus(`  - SMS capable: ${result.canReceiveSms ? 'Yes' : 'No'}`);
+        
+        alert('Form is valid! In a real application, this would submit to your server.');
+      } catch (error) {
+        logStatus('✗ Validation error: ' + error.message);
+        alert('Validation error: ' + error.message);
+      }
+    });
+
+    logStatus('--- Widget Test Page Ready ---');
+    logStatus('Try entering a phone number and clicking outside the field to see validation in action!');
+  </script>
+</body>
+</html>
