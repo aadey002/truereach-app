@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { FileText, Zap, Code2, CheckCircle, ArrowRight } from "lucide-react";
-import logoUrl from "@assets/truereach-logo-full.png";
+import logoUrl from "@assets/image_1762494512072.png";
 
 export default function Landing() {
   return (
