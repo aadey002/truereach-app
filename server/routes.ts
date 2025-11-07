@@ -12,6 +12,9 @@ interface VeriphoneResponse {
   phone_type?: string;
   carrier?: string;
   status?: string;
+  international_number?: string;
+  local_format?: string;
+  country_code?: string;
 }
 
 async function validatePhoneNumber(phone: string, apiKey: string): Promise<{
@@ -107,6 +110,66 @@ function parsePhoneNumbers(fileBuffer: Buffer, filename: string): string[] {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Real-time validation endpoint for single phone numbers
+  app.post('/api/validate-realtime', async (req, res) => {
+    try {
+      const { phone, country = 'US' } = req.body;
+
+      if (!phone) {
+        return res.status(400).json({ error: 'Phone number required' });
+      }
+
+      const apiKey = process.env.VERIPHONE_API_KEY;
+      if (!apiKey) {
+        return res.status(500).json({ error: 'API key not configured' });
+      }
+
+      const response = await fetch(
+        `https://api.veriphone.io/v2/verify?phone=${encodeURIComponent(phone)}&key=${apiKey}&default_country=${country}`,
+        { 
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json'
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status}`);
+      }
+
+      const data: VeriphoneResponse = await response.json();
+
+      const result = {
+        valid: data.phone_valid || false,
+        phone_type: data.phone_type || 'unknown',
+        can_receive_sms: (data.phone_type || '').toLowerCase() === 'mobile',
+        carrier: data.carrier || 'Unknown',
+        formatted: data.international_number || phone,
+        local_format: data.local_format || '',
+        country: data.country_code || country,
+        warnings: [] as string[]
+      };
+
+      // Add warnings
+      if (!result.valid) {
+        result.warnings.push('Invalid phone number');
+      } else if (result.phone_type === 'fixed_line') {
+        result.warnings.push('Landline - cannot receive SMS');
+      } else if (result.phone_type === 'voip') {
+        result.warnings.push('VOIP number - SMS delivery may be unreliable');
+      }
+
+      res.json(result);
+    } catch (error) {
+      console.error('Real-time validation error:', error);
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : 'Validation failed',
+        valid: false
+      });
+    }
+  });
+
   app.post('/api/validate', upload.single('file'), async (req, res) => {
     try {
       if (!req.file) {
