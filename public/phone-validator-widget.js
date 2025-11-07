@@ -1,5 +1,6 @@
 /**
- * Phone Validator Pro - Embeddable Widget
+ * TrueReach - Phone Validation Widget
+ * Verifying connections, providing care
  * Real-time phone validation for EHR and Pharmacy Management systems
  * 
  * Usage:

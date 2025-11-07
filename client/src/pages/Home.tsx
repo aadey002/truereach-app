@@ -69,12 +69,14 @@ export default function Home() {
   return (
     <div className="max-w-7xl mx-auto">
       <Card className="p-8 mb-8 text-center">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Activity className="w-10 h-10 text-primary" />
-            <h1 className="text-4xl font-bold text-foreground">Patient Phone Validator</h1>
+          <div className="flex flex-col items-center justify-center gap-3 mb-4">
+            <h1 className="text-4xl font-bold text-foreground">Batch Phone Validation</h1>
+            <p className="text-lg text-muted-foreground">
+              Verifying connections, providing care
+            </p>
           </div>
-          <p className="text-lg text-muted-foreground">
-            Validate phone numbers and identify SMS-capable contacts
+          <p className="text-muted-foreground">
+            Upload CSV or Excel files to validate phone numbers and identify SMS-capable contacts
           </p>
         </Card>
 

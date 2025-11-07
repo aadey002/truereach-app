@@ -1,8 +1,10 @@
-# Patient Phone Validator - Healthcare
+# TrueReach - Healthcare Phone Validation
+
+**Tagline**: Verifying connections, providing care
 
 ## Overview
 
-This is a healthcare-focused phone validation application that provides three validation modes:
+TrueReach is a healthcare-focused phone validation application that provides three validation modes:
 
 1. **Batch Upload Validation**: Upload CSV or Excel files containing phone numbers and validate them in bulk
 2. **Real-Time Validation**: Validate individual phone numbers as users type in forms

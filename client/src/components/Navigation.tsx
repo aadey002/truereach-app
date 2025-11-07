@@ -1,6 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { FileText, Zap, DollarSign } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import logoUrl from "@assets/truereach-logo.png";
 
 export function Navigation() {
   const [location] = useLocation();
@@ -16,10 +17,11 @@ export function Navigation() {
     <Card className="mb-8">
       <nav className="p-4">
         <div className="flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">📞</span>
-            <span className="font-bold text-primary text-xl">Phone Validator Pro</span>
-          </div>
+          <Link href="/">
+            <a className="flex items-center">
+              <img src={logoUrl} alt="TrueReach" className="h-12" />
+            </a>
+          </Link>
           <div className="flex gap-2">
             {links.map(({ href, label, icon: Icon }) => (
               <Link
