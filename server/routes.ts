@@ -110,6 +110,19 @@ function parsePhoneNumbers(fileBuffer: Buffer, filename: string): string[] {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Enable CORS for widget integration
+  app.use('/api/validate-realtime', (req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
+    if (req.method === 'OPTIONS') {
+      return res.sendStatus(200);
+    }
+    
+    next();
+  });
+
   // Real-time validation endpoint for single phone numbers
   app.post('/api/validate-realtime', async (req, res) => {
     try {

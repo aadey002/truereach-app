@@ -8,6 +8,7 @@ export function Navigation() {
   const links = [
     { href: "/", label: "Batch Upload", icon: FileText },
     { href: "/widget-demo", label: "Real-Time Demo", icon: Zap },
+    { href: "/widget-integration", label: "EHR Widget", icon: Zap },
     { href: "/pricing", label: "Pricing", icon: DollarSign },
   ];
 
