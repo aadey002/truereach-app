@@ -7,6 +7,12 @@ import logoUrl from "@assets/truereach-logo-full.png";
 export default function Landing() {
   return (
     <div className="max-w-7xl mx-auto">
+      <section className="text-center py-12 mb-16">
+        <div className="flex justify-center mb-12">
+          <img src={logoUrl} alt="TrueReach - Verify. Connect. Care!" className="h-40" />
+        </div>
+      </section>
+
       <section className="mb-16">
         <h2 className="text-3xl font-bold text-center mb-12">Three Powerful Ways to Validate</h2>
         
