@@ -32,7 +32,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <div className="min-h-screen bg-gradient-to-br from-primary/20 via-primary/5 to-background">
-          <div className="container mx-auto px-4 py-2">
+          <div className="container mx-auto px-4 py-0">
             {showNavigation && <Navigation />}
             <Router />
           </div>
