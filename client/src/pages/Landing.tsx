@@ -6,7 +6,7 @@ import logoUrl from "@assets/image_1762494775992.png";
 
 export default function Landing() {
   return (
-    <div className="max-w-7xl mx-auto pt-0 mt-30">
+    <div className="max-w-7xl mx-auto pt-0 -mt-30">
       <section className="text-center pt-0 pb-8 mb-8">
         <div className="flex items-center justify-center -mb-[100px] gap-0">
           <img src={logoUrl} alt="TrueReach Logo" className="h-90 -mr-4" />
