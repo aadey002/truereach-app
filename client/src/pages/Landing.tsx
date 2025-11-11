@@ -12,7 +12,7 @@ export default function Landing() {
           <img src={logoUrl} alt="TrueReach Logo" className="h-90 -mr-4" />
         </div>
 
-        <h1 className="text-6xl md:text-7xl font-extrabold text-foreground mb-4 mt-0 pt-0">
+        <h1 className="text-6xl md:text-7xl font-extrabold text-foreground mb-20 mt-0 pt-0">
           Stop Missed Appointments. Start True Patient Engagement.
         </h1>
 
