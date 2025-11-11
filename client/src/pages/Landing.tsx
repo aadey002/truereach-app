@@ -8,7 +8,7 @@ export default function Landing() {
   return (
     <div className="max-w-7xl mx-auto pt-0 -mt-80">
       <section className="text-center pt-0 pb-8 mb-8">
-        <div className="flex items-center justify-center -mb-[260px] gap-0">
+        <div className="flex items-center justify-center -mb-[280px] gap-0">
           <img src={logoUrl} alt="TrueReach Logo" className="h-90 -mr-4" />
         </div>
 
