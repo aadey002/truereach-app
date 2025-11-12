@@ -22,13 +22,12 @@ export default function Landing() {
           valuable clinical time.
         </p>
 
-        <Link href="/batch">
-          <a
-            className="inline-block bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition duration-300"
-            data-testid="button-request-demo"
-          >
-            Try Live Demo
-          </a>
+        <Link 
+          href="/batch"
+          className="inline-block bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition duration-300"
+          data-testid="button-request-demo"
+        >
+          Try Live Demo
         </Link>
 
         <div className="mt-6 flex justify-center gap-6 text-sm text-muted-foreground">
@@ -212,15 +211,14 @@ export default function Landing() {
                 <span className="text-sm">Export validated results</span>
               </li>
             </ul>
-            <Link href="/batch">
-              <Button
-                className="w-full"
-                variant="outline"
-                data-testid="button-try-batch"
-              >
-                Try Batch Upload
-              </Button>
-            </Link>
+            <Button
+              className="w-full"
+              variant="outline"
+              data-testid="button-try-batch"
+              onClick={() => window.location.href = '/batch'}
+            >
+              Try Batch Upload
+            </Button>
           </Card>
 
           <Card className="p-8 hover-elevate border-primary">
@@ -250,11 +248,13 @@ export default function Landing() {
                 <span className="text-sm">Landline & VoIP warnings</span>
               </li>
             </ul>
-            <Link href="/widget-demo">
-              <Button className="w-full" data-testid="button-try-realtime">
-                Try Live Demo
-              </Button>
-            </Link>
+            <Button 
+              className="w-full" 
+              data-testid="button-try-realtime"
+              onClick={() => window.location.href = '/widget-demo'}
+            >
+              Try Live Demo
+            </Button>
           </Card>
 
           <Card className="p-8 hover-elevate">
@@ -284,15 +284,14 @@ export default function Landing() {
                 <span className="text-sm">Customizable styling</span>
               </li>
             </ul>
-            <Link href="/widget-integration">
-              <Button
-                className="w-full"
-                variant="outline"
-                data-testid="button-view-integration"
-              >
-                View Integration
-              </Button>
-            </Link>
+            <Button
+              className="w-full"
+              variant="outline"
+              data-testid="button-view-integration"
+              onClick={() => window.location.href = '/widget-integration'}
+            >
+              View Integration
+            </Button>
           </Card>
         </div>
       </section>
@@ -341,21 +340,22 @@ export default function Landing() {
           Choose the validation method that works best for your organization.
         </p>
         <div className="flex gap-4 justify-center">
-          <Link href="/batch">
-            <Button size="lg" data-testid="button-get-started">
-              Get Started
-              <ArrowRight className="ml-2 w-4 h-4" />
-            </Button>
-          </Link>
-          <Link href="/pricing">
-            <Button
-              size="lg"
-              variant="outline"
-              data-testid="button-see-all-plans"
-            >
-              See All Plans
-            </Button>
-          </Link>
+          <Button 
+            size="lg" 
+            data-testid="button-get-started"
+            onClick={() => window.location.href = '/batch'}
+          >
+            Get Started
+            <ArrowRight className="ml-2 w-4 h-4" />
+          </Button>
+          <Button
+            size="lg"
+            variant="outline"
+            data-testid="button-see-all-plans"
+            onClick={() => window.location.href = '/pricing'}
+          >
+            See All Plans
+          </Button>
         </div>
       </section>
     </div>

@@ -148,6 +148,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
 
       if (!response.ok) {
+        if (response.status === 402) {
+          throw new Error('API quota exceeded - please check your Veriphone API plan');
+        }
         throw new Error(`API request failed: ${response.status}`);
       }
 
