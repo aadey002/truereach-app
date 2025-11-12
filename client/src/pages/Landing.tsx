@@ -17,10 +17,12 @@ export default function Landing() {
         </h1>
 
         <p className="text-xl md:text-2xl text-muted-foreground mb-6 max-w-3xl mx-auto">
-          The only patient verification tool built to help <strong>FQHCs reduce no-shows by up to 25%</strong> and maximize valuable clinical time.
+          The only patient verification tool built to help{" "}
+          <strong>FQHCs reduce no-shows by up to 25%</strong> and maximize
+          valuable clinical time.
         </p>
 
-        <a 
+        <a
           href="https://flask-data-viz-aadey002.replit.app"
           target="_blank"
           className="inline-block bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition duration-300"
@@ -48,53 +50,87 @@ export default function Landing() {
             How It Works: Verification That Fits Your Workflow
           </h2>
           <p className="text-lg text-center text-muted-foreground mb-8 max-w-4xl mx-auto">
-            TrueReach converts bad data into reliable connections using two powerful modes to support every team and every process.
+            TrueReach converts bad data into reliable connections using two
+            powerful modes to support every team and every process.
           </p>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <Card className="p-6 border-primary/20">
-              <h3 className="text-2xl font-semibold text-primary mb-3">1. Real-Time Widget</h3>
-              <p className="text-sm font-medium text-muted-foreground mb-4">Target User: Front-Desk / Call Center Staff</p>
+              <h3 className="text-2xl font-semibold text-primary mb-3">
+                1. Real-Time Widget
+              </h3>
+              <p className="text-sm font-medium text-muted-foreground mb-4">
+                Target User: Front-Desk / Call Center Staff
+              </p>
               <ul className="space-y-2 text-muted-foreground">
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                  <span><strong>Instant Check at Registration:</strong> Use our light, secure widget to verify a new patient's number while they are on the phone or checking in.</span>
+                  <span>
+                    <strong>Instant Check at Registration:</strong> Use our
+                    light, secure widget to verify a new patient's number while
+                    they are on the phone or checking in.
+                  </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                  <span><strong>Stop Bad Data:</strong> Eliminates data entry errors before the information enters your EHR.</span>
+                  <span>
+                    <strong>Stop Bad Data:</strong> Eliminates data entry errors
+                    before the information enters your EHR.
+                  </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                  <span><strong>Seamless Workflow:</strong> Designed to integrate without interrupting your existing front-end process.</span>
+                  <span>
+                    <strong>Seamless Workflow:</strong> Designed to integrate
+                    without interrupting your existing front-end process.
+                  </span>
                 </li>
               </ul>
             </Card>
 
             <Card className="p-6 border-primary/20">
-              <h3 className="text-2xl font-semibold text-primary mb-3">2. Batch Upload</h3>
-              <p className="text-sm font-medium text-muted-foreground mb-4">Target User: IT / Operations Teams</p>
+              <h3 className="text-2xl font-semibold text-primary mb-3">
+                2. Batch Upload
+              </h3>
+              <p className="text-sm font-medium text-muted-foreground mb-4">
+                Target User: IT / Operations Teams
+              </p>
               <ul className="space-y-2 text-muted-foreground">
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                  <span><strong>Proactive Database Cleanup:</strong> Upload your entire patient list or targeted cohorts for a full database scrub.</span>
+                  <span>
+                    <strong>Proactive Database Cleanup:</strong> Upload your
+                    entire patient list or targeted cohorts for a full database
+                    scrub.
+                  </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                  <span><strong>Campaign Ready:</strong> Delivers a clean file for mass outreach campaigns and quarterly data audits.</span>
+                  <span>
+                    <strong>Campaign Ready:</strong> Delivers a clean file for
+                    mass outreach campaigns and quarterly data audits.
+                  </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                  <span><strong>Maximize Reach:</strong> Ensure all overdue patients and care gap alerts reach the intended recipient.</span>
+                  <span>
+                    <strong>Maximize Reach:</strong> Ensure all overdue patients
+                    and care gap alerts reach the intended recipient.
+                  </span>
                 </li>
               </ul>
             </Card>
           </div>
 
           <div className="text-center mt-8 pt-6 border-t">
-            <h3 className="text-xl font-semibold text-foreground mb-2">3. Connect & Care!</h3>
+            <h3 className="text-xl font-semibold text-foreground mb-2">
+              3. Connect & Care!
+            </h3>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-              Verified data is automatically pushed or securely loaded back into your EHR/PMS, ensuring your vital communications <strong>reach the right person, right now,</strong> helping you close care gaps and save lives.
+              Verified data is automatically pushed or securely loaded back into
+              your EHR/PMS, ensuring your vital communications{" "}
+              <strong>reach the right person, right now,</strong> helping you
+              close care gaps and save lives.
             </p>
           </div>
         </div>
@@ -105,26 +141,38 @@ export default function Landing() {
           <h2 className="text-3xl font-bold text-center text-foreground mb-6">
             The FQHC Value Proposition: The Power of Valid Data
           </h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div className="p-6">
-              <h3 className="text-xl font-semibold text-foreground mb-3">Boost Revenue Cycle</h3>
+              <h3 className="text-xl font-semibold text-foreground mb-3">
+                Boost Revenue Cycle
+              </h3>
               <p className="text-muted-foreground">
-                Every verified appointment is a scheduled billable encounter. Lower no-show rates directly lead to higher daily revenue capture under the <strong>PPS model</strong>.
+                Every verified appointment is a scheduled billable encounter.
+                Lower no-show rates directly lead to higher daily revenue
+                capture under the <strong>PPS model</strong>.
               </p>
             </div>
 
             <div className="p-6">
-              <h3 className="text-xl font-semibold text-foreground mb-3">Improve Quality Metrics</h3>
+              <h3 className="text-xl font-semibold text-foreground mb-3">
+                Improve Quality Metrics
+              </h3>
               <p className="text-muted-foreground">
-                Guaranteed patient contact for preventive screenings and <strong>Chronic Care Management (CCM)</strong> improves UDS and HEDIS measures, supporting Value-Based Care goals.
+                Guaranteed patient contact for preventive screenings and{" "}
+                <strong>Chronic Care Management (CCM)</strong> improves UDS and
+                HEDIS measures, supporting Value-Based Care goals.
               </p>
             </div>
-            
+
             <div className="p-6">
-              <h3 className="text-xl font-semibold text-foreground mb-3">Increase Staff Efficiency</h3>
+              <h3 className="text-xl font-semibold text-foreground mb-3">
+                Increase Staff Efficiency
+              </h3>
               <p className="text-muted-foreground">
-                Free your staff from the endless cycle of "phone tag." Automation lets your team focus on patient support, not manual data verification.
+                Free your staff from the endless cycle of "phone tag."
+                Automation lets your team focus on patient support, not manual
+                data verification.
               </p>
             </div>
           </div>
@@ -132,8 +180,10 @@ export default function Landing() {
       </section>
 
       <section id="get-started" className="mb-8">
-        <h2 className="text-3xl font-bold text-center mb-6">Three Powerful Ways to Validate</h2>
-        
+        <h2 className="text-3xl font-bold text-center mb-6">
+          Three Powerful Ways to Validate
+        </h2>
+
         <div className="grid md:grid-cols-3 gap-8">
           <Card className="p-8 hover-elevate">
             <div className="flex justify-center mb-4">
@@ -141,10 +191,12 @@ export default function Landing() {
                 <FileText className="w-8 h-8 text-primary" />
               </div>
             </div>
-            <h3 className="text-2xl font-bold mb-4 text-center">Batch Upload</h3>
+            <h3 className="text-2xl font-bold mb-4 text-center">
+              Batch Upload
+            </h3>
             <p className="text-muted-foreground text-center mb-6">
-              Upload CSV or Excel files to clean your entire patient database in minutes. 
-              Validate thousands of phone numbers at once.
+              Upload CSV or Excel files to clean your entire patient database in
+              minutes. Validate thousands of phone numbers at once.
             </p>
             <ul className="space-y-2 mb-6">
               <li className="flex items-start gap-2">
@@ -161,7 +213,11 @@ export default function Landing() {
               </li>
             </ul>
             <Link href="/batch">
-              <Button className="w-full" variant="outline" data-testid="button-try-batch">
+              <Button
+                className="w-full"
+                variant="outline"
+                data-testid="button-try-batch"
+              >
                 Try Batch Upload
               </Button>
             </Link>
@@ -173,10 +229,12 @@ export default function Landing() {
                 <Zap className="w-8 h-8 text-primary" />
               </div>
             </div>
-            <h3 className="text-2xl font-bold mb-4 text-center">Real-Time API</h3>
+            <h3 className="text-2xl font-bold mb-4 text-center">
+              Real-Time API
+            </h3>
             <p className="text-muted-foreground text-center mb-6">
-              Validate phone numbers instantly as users type. Perfect for patient registration 
-              and intake forms.
+              Validate phone numbers instantly as users type. Perfect for
+              patient registration and intake forms.
             </p>
             <ul className="space-y-2 mb-6">
               <li className="flex items-start gap-2">
@@ -205,9 +263,11 @@ export default function Landing() {
                 <Code2 className="w-8 h-8 text-primary" />
               </div>
             </div>
-            <h3 className="text-2xl font-bold mb-4 text-center">Widget Integration</h3>
+            <h3 className="text-2xl font-bold mb-4 text-center">
+              Widget Integration
+            </h3>
             <p className="text-muted-foreground text-center mb-6">
-              Drop-in JavaScript widget for EHR and Pharmacy Management systems. 
+              Drop-in JavaScript widget for EHR and Pharmacy Management systems.
               No backend changes required.
             </p>
             <ul className="space-y-2 mb-6">
@@ -225,7 +285,11 @@ export default function Landing() {
               </li>
             </ul>
             <Link href="/widget-integration">
-              <Button className="w-full" variant="outline" data-testid="button-view-integration">
+              <Button
+                className="w-full"
+                variant="outline"
+                data-testid="button-view-integration"
+              >
                 View Integration
               </Button>
             </Link>
@@ -236,24 +300,35 @@ export default function Landing() {
       <section className="mb-8">
         <Card className="p-8 bg-primary/5">
           <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl font-bold mb-4">Why Phone Validation Matters</h2>
+            <h2 className="text-3xl font-bold mb-4">
+              Why Phone Validation Matters
+            </h2>
             <p className="text-lg text-muted-foreground mb-6">
-              Invalid phone numbers cost healthcare organizations thousands in missed appointments, 
-              failed medication reminders, and lost patient engagement opportunities.
+              Invalid phone numbers cost healthcare organizations thousands in
+              missed appointments, failed medication reminders, and lost patient
+              engagement opportunities.
             </p>
-            
+
             <div className="grid md:grid-cols-3 gap-8">
               <div>
-                <div className="text-4xl font-bold text-primary mb-2">99.9%</div>
-                <div className="text-sm text-muted-foreground">Validation Accuracy</div>
+                <div className="text-4xl font-bold text-primary mb-2">
+                  99.9%
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Validation Accuracy
+                </div>
               </div>
               <div>
                 <div className="text-4xl font-bold text-primary mb-2">50K+</div>
-                <div className="text-sm text-muted-foreground">Numbers Validated Daily</div>
+                <div className="text-sm text-muted-foreground">
+                  Numbers Validated Daily
+                </div>
               </div>
               <div>
                 <div className="text-4xl font-bold text-primary mb-2">24/7</div>
-                <div className="text-sm text-muted-foreground">Support Available</div>
+                <div className="text-sm text-muted-foreground">
+                  Support Available
+                </div>
               </div>
             </div>
           </div>
@@ -273,7 +348,11 @@ export default function Landing() {
             </Button>
           </Link>
           <Link href="/pricing">
-            <Button size="lg" variant="outline" data-testid="button-see-all-plans">
+            <Button
+              size="lg"
+              variant="outline"
+              data-testid="button-see-all-plans"
+            >
               See All Plans
             </Button>
           </Link>
