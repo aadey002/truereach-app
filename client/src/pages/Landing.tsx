@@ -23,7 +23,7 @@ export default function Landing() {
         </p>
 
         <a
-          href="https://flask-data-viz-aadey002.replit.app"
+          href="https://flask-data-viz-aadey002.replit.app:5001"
           target="_blank"
           className="inline-block bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition duration-300"
           data-testid="button-request-demo"
