@@ -26,7 +26,7 @@ export default function Landing() {
           className="inline-block bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition duration-300"
           data-testid="button-request-demo"
         >
-          Request a Free Demo
+          See live demo
         </a>
 
         <div className="mt-6 flex justify-center gap-6 text-sm text-muted-foreground">
