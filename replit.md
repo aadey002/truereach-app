@@ -2,6 +2,19 @@
 
 **Tagline**: Verify. Connect. Care!
 
+## Recent Changes
+
+**November 13, 2025 - PHASE 2 COMPLETE**: Shared NANP Failure Detection System
+- Implemented centralized NANP validation with explicit failure codes (invalid_area_code, reserved_555_exchange, reserved_911_exchange, n11_reserved, leading_digit_violation, zero_line)
+- Refactored `getNANPValidation()` to return both boolean and failure code, ensuring perfect lockstep between validation and suggestion logic
+- Fixed critical bug: Exchange "111" now correctly identified as leading_digit_violation (not misidentified as N11)
+- Updated `getNANPSuggestion()` to switch on failure codes, eliminating duplicate logic and ensuring every NANP rejection yields specific, actionable guidance
+- All NANP suggestions now have 95% confidence (HIGH tier) with detailed explanations and NANP rule citations
+- Combined suggestion system: NANP guidance prepended to placeholder, transposed, and format analyses
+- Applied to both batch (`/api/validate`) and real-time (`/api/validate-realtime`) endpoints
+- Architect-approved for production readiness with zero security concerns
+- Next recommended actions: Add automated regression tests for each failure code, spot-check UI/export rendering, monitor VALID_US_AREA_CODES for updates
+
 ## Overview
 
 TrueReach is a healthcare-focused phone validation application that provides three validation modes:
@@ -19,17 +32,24 @@ The application uses the Veriphone API to identify valid phone numbers, determin
 - Automatic phone column detection
 - **Duplicate Detection**: Pre-validation summary with smart normalization (strips non-digit characters except leading +), choice to remove or keep duplicates, visual highlighting in results
 - **Real-Time Progress**: Purple gradient progress bar showing "Validating: X of Y numbers (Z%)" with smooth animations
-- **Smart Correction Suggestions**: Conservative analysis for invalid numbers with safety-focused guidance
-  - **Placeholder Detection**: Identifies test/fake numbers (555-1234, 000-0000) - warning only
-  - **Sequential Pattern Detection**: Identifies test data patterns (123-4567) - warning only
-  - **Extension Removal**: Suggests removing extensions if result has valid area code
-  - **Invalid Area Code**: Identifies invalid area codes, requires verification
-  - **Missing Digits**: Identifies incomplete numbers, requests complete number
-  - **Format Cleanup**: Reformats valid digits into standard format
+- **Smart Correction Suggestions (PHASE 2 COMPLETE)**: Multi-layered analysis with NANP validation, transposed digit detection, and pattern recognition
+  - **NANP Validation**: Enforces North American Numbering Plan rules (overrides Veriphone API)
+    - Invalid area codes (123, 999, etc.)
+    - Reserved exchanges (555, 000, 911)
+    - N11 service codes (211, 311, 411, 511, 611, 711, 811, 911)
+    - Leading digit violations (exchange codes starting with 0 or 1)
+    - Zero line numbers (last 4 digits cannot be 0000)
+    - Uses shared failure detection system ensuring perfect lockstep between validation and suggestions
+  - **Transposed Digit Detection**: Identifies adjacent digit swaps (410-555-1234 ↔ 410-555-1243)
+    - Only suggests when resulting number passes FULL NANP validation
+    - Safety guardrails: 10-digit numbers only, adjacent swaps only, no speculative fixes
+  - **Placeholder Detection**: Enhanced pattern recognition (zero blocks, repeating digits, sequential patterns, 555 exchanges)
+  - **Confidence Tier System**: LOW (<75), MEDIUM (75-89), HIGH (90+) with visual badges
+  - **Combined Suggestions**: NANP guidance prepended to other analyses (format issues, extensions, etc.)
   - All suggestions require patient verification (prominent red warnings in UI)
-  - Export Analysis feature creates CSV with "Possible Fix (VERIFY FIRST)" column
+  - Export Analysis feature creates CSV with "Possible Fix (VERIFY FIRST)" column showing top 3 suggestions with confidence tiers
 - Summary dashboard showing valid/invalid counts and SMS-capable numbers
-- Detailed results table with phone type, carrier information, and suggestions column
+- Detailed results table with phone type, carrier information, and suggestions column with popover UI
 - Rate limiting to respect API quotas
 
 ### Real-Time Validation (Widget Demo)
