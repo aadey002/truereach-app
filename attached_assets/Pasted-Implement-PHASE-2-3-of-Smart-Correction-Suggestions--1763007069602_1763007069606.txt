@@ -1,0 +1,127 @@
+Implement PHASE 2 & 3 of Smart Correction Suggestions:
+
+═══════════════════════════════════════════
+PHASE 2: ADVANCED PATTERN DETECTION
+═══════════════════════════════════════════
+
+1. TRANSPOSED DIGIT DETECTION:
+   Algorithm:
+   - For invalid numbers, try all adjacent digit swaps
+   - Example: 443-721-3714 → try 443-712-3714 (swap 2↔1)
+   - Validate each permutation
+   - If valid, suggest with "Possible transposition" label
+   - Limit to 2-digit swaps to avoid too many suggestions
+   
+   Display:
+   ❌ 443-721-3714 (Invalid)
+   💡 443-712-3714 (Digits 2-1 transposed) ⭐ Confidence: 90%
+
+2. PLACEHOLDER/PATTERN DETECTION:
+   Flag these patterns as "Likely Invalid/Test Data":
+   
+   Sequential:
+   - 123-456-7890, 234-567-8901, etc.
+   - 111-1111, 222-2222, 333-3333
+   
+   Zeros:
+   - XXX-000-0000
+   - 000-000-0000
+   
+   Repeating:
+   - 555-5555, 777-7777
+   
+   Common Test:
+   - 555-1234, 555-0100
+   
+   Display with warning icon:
+   ⚠️ 443-000-0000 (Placeholder pattern detected - verify with patient)
+
+3. BULK CORRECTION EXPORT:
+   Add button: "Download Corrections Report (CSV)"
+   
+   Output format:
+   | Original | Status | Issue | Suggestion 1 | Confidence | Suggestion 2 | Suggestion 3 | Action Needed |
+   |----------|--------|-------|--------------|------------|--------------|--------------|---------------|
+   | 443-712-374 | Invalid | Missing 1 digit | 443-712-3740 | 85% | 443-712-3741 | 443-712-3749 | Add digit |
+   | 555-123-4567 | Invalid | Bad area code | 410-123-4567 | 70% | 443-123-4567 | 240-123-4567 | Fix area code |
+   
+   Include:
+   - All invalid numbers
+   - Top 3 suggestions per number
+   - Confidence scores
+   - Issue type
+   - Recommended action
+
+═══════════════════════════════════════════
+PHASE 3: INTELLIGENT LEARNING SYSTEM
+═══════════════════════════════════════════
+
+1. ML-BASED SUGGESTIONS (Pattern Learning):
+   
+   Track correction history:
+   - Store: [invalid_pattern] → [corrected_number] → [verified: true/false]
+   - Learn common mistakes for this practice
+   
+   Example learning:
+   If practice frequently fixes:
+   - 443-712-XXX4 → 443-712-XX74 (staff often forgets middle digit)
+   - 555-XXX-XXXX → 410-XXX-XXXX (staff uses wrong area code)
+   
+   Use patterns to boost confidence scores:
+   💡 443-712-374 → 443-712-3741
+   ⭐ Confidence: 92% (matches 15 previous corrections at this practice)
+
+2. REGIONAL PATTERN LEARNING:
+   
+   Build area code database by state/region:
+```javascript
+   const regionalPatterns = {
+     maryland: {
+       areaCodes: ['410', '443', '240', '301', '667'],
+       mostCommon: '410',
+       distribution: {
+         '410': 35%, // Baltimore
+         '443': 25%, // Baltimore overlay
+         '240': 20%, // Western MD
+         '301': 15%, // DC suburbs
+         '667': 5%   // New overlay
+       }
+     }
+   }
+```
+   
+   Smart suggestions based on practice location:
+   - If practice in Baltimore → suggest 410/443 first
+   - If practice in DC area → suggest 301/240 first
+   
+   Enhanced display:
+   ❌ 555-123-4567 (Invalid area code)
+   💡 410-123-4567 ⭐ 90% (Most common in Baltimore)
+   💡 443-123-4567 ⭐ 75% (Common overlay)
+   💡 240-123-4567 ⭐ 50% (Less common in your area)
+
+3. HISTORICAL CORRECTION TRACKING:
+   
+   Create corrections database:
+```javascript
+   {
+     correctionId: "uuid",
+     originalNumber: "443-712-374",
+     suggestedNumber: "443-712-3740",
+     appliedDate: "2024-01-15",
+     verifiedBy: "staff_user_123",
+     verificationMethod: "patient_confirmed" | "callback_success" | "sms_delivered",
+     wasCorrect: true,
+     practiceId: "practice_xyz"
+   }
+```
+   
+   Features:
+   
+   A) CONFIDENCE BOOSTING:
+   - Track success rate per suggestion type
+   - "Missing digit suggestions: 87% accuracy based on 156 corrections"
+   - Adjust future confidence scores
+   
+   B) STAFF DASHBOARD:
+   Show analytics:

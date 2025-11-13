@@ -186,6 +186,7 @@ export default function Home() {
       phone_type: data.phone_type,
       can_receive_sms: data.can_receive_sms,
       carrier: data.carrier,
+      suggestions: data.suggestions, // Include suggestions from API
     };
   };
 
