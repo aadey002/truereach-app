@@ -17,9 +17,19 @@ The application uses the Veriphone API to identify valid phone numbers, determin
 ### Batch Validation (Main App)
 - Upload CSV and Excel files (.csv, .xlsx, .xls)
 - Automatic phone column detection
-- Validates all phone numbers in the file
+- **Duplicate Detection**: Pre-validation summary with smart normalization (strips non-digit characters except leading +), choice to remove or keep duplicates, visual highlighting in results
+- **Real-Time Progress**: Purple gradient progress bar showing "Validating: X of Y numbers (Z%)" with smooth animations
+- **Smart Correction Suggestions**: Conservative analysis for invalid numbers with safety-focused guidance
+  - **Placeholder Detection**: Identifies test/fake numbers (555-1234, 000-0000) - warning only
+  - **Sequential Pattern Detection**: Identifies test data patterns (123-4567) - warning only
+  - **Extension Removal**: Suggests removing extensions if result has valid area code
+  - **Invalid Area Code**: Identifies invalid area codes, requires verification
+  - **Missing Digits**: Identifies incomplete numbers, requests complete number
+  - **Format Cleanup**: Reformats valid digits into standard format
+  - All suggestions require patient verification (prominent red warnings in UI)
+  - Export Analysis feature creates CSV with "Possible Fix (VERIFY FIRST)" column
 - Summary dashboard showing valid/invalid counts and SMS-capable numbers
-- Detailed results table with phone type and carrier information
+- Detailed results table with phone type, carrier information, and suggestions column
 - Rate limiting to respect API quotas
 
 ### Real-Time Validation (Widget Demo)
