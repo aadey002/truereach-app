@@ -4,6 +4,7 @@ import multer from "multer";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
 import { validationResponseSchema } from "@shared/schema";
+import { analyzeInvalidPhone, type PhoneSuggestion } from "./phoneAnalyzer";
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -23,6 +24,7 @@ async function validatePhoneNumber(phone: string, apiKey: string): Promise<{
   phone_type: string;
   can_receive_sms: boolean;
   carrier: string;
+  suggestions?: PhoneSuggestion[];
 }> {
   try {
     const response = await fetch(
@@ -41,21 +43,32 @@ async function validatePhoneNumber(phone: string, apiKey: string): Promise<{
 
     const data: VeriphoneResponse = await response.json();
 
+    const isValid = data.phone_valid || false;
+    let suggestions: PhoneSuggestion[] | undefined;
+
+    // Generate suggestions for invalid numbers
+    if (!isValid) {
+      suggestions = analyzeInvalidPhone(phone, data.status);
+    }
+
     return {
       phone,
-      valid: data.phone_valid || false,
+      valid: isValid,
       phone_type: data.phone_type || 'unknown',
       can_receive_sms: (data.phone_type || '').toLowerCase() === 'mobile',
-      carrier: data.carrier || 'Unknown'
+      carrier: data.carrier || 'Unknown',
+      suggestions
     };
   } catch (error) {
     console.error(`Error validating phone ${phone}:`, error);
+    const suggestions = analyzeInvalidPhone(phone);
     return {
       phone,
       valid: false,
       phone_type: 'error',
       can_receive_sms: false,
-      carrier: 'Error'
+      carrier: 'Error',
+      suggestions
     };
   }
 }
@@ -156,20 +169,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const data: VeriphoneResponse = await response.json();
 
+      const isValid = data.phone_valid || false;
       const result = {
-        valid: data.phone_valid || false,
+        valid: isValid,
         phone_type: data.phone_type || 'unknown',
         can_receive_sms: (data.phone_type || '').toLowerCase() === 'mobile',
         carrier: data.carrier || 'Unknown',
         formatted: data.international_number || phone,
         local_format: data.local_format || '',
         country: data.country_code || country,
-        warnings: [] as string[]
+        warnings: [] as string[],
+        suggestions: undefined as PhoneSuggestion[] | undefined
       };
 
       // Add warnings
       if (!result.valid) {
         result.warnings.push('Invalid phone number');
+        // Generate correction suggestions for invalid numbers
+        result.suggestions = analyzeInvalidPhone(phone, data.status);
       } else if (result.phone_type === 'fixed_line') {
         result.warnings.push('Landline - cannot receive SMS');
       } else if (result.phone_type === 'voip') {
