@@ -4,7 +4,7 @@ import multer from "multer";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
 import { validationResponseSchema } from "@shared/schema";
-import { analyzeInvalidPhone, type PhoneSuggestion } from "./phoneAnalyzer";
+import { analyzeInvalidPhone, isValidNANPFormat, getNANPSuggestion, type PhoneSuggestion } from "./phoneAnalyzer";
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -43,12 +43,50 @@ async function validatePhoneNumber(phone: string, apiKey: string): Promise<{
 
     const data: VeriphoneResponse = await response.json();
 
-    const isValid = data.phone_valid || false;
+    // CRITICAL: Apply NANP validation with proper digit normalization
+    let digits = phone.replace(/\D/g, '');
+    // Normalize: Remove leading "1" (country code) whenever present and length > 10
+    while (digits.length > 10 && digits.startsWith('1')) {
+      digits = digits.slice(1);
+    }
+    
+    const isApiValid = data.phone_valid || false;
+    const isNANPValid = digits.length === 10 && isValidNANPFormat(digits);
+    
+    // CRITICAL: NANP validation is DECISIVE - reject if NANP fails regardless of Veriphone
+    // A number is only truly valid if BOTH Veriphone AND NANP validation pass
+    let isValid: boolean;
+    if (!isNANPValid) {
+      // NANP validation failed - ALWAYS mark as invalid, ignore Veriphone
+      isValid = false;
+    } else if (!isApiValid) {
+      // Veriphone validation failed - mark as invalid
+      isValid = false;
+    } else {
+      // Both passed - mark as valid
+      isValid = true;
+    }
+    
     let suggestions: PhoneSuggestion[] | undefined;
 
-    // Generate suggestions for invalid numbers
+    // Generate suggestions for invalid numbers (including NANP violations)
     if (!isValid) {
-      suggestions = analyzeInvalidPhone(phone, data.status);
+      // CRITICAL: ALWAYS run full analysis to get all suggestions (placeholder, transposed, etc.)
+      // Pass ORIGINAL phone string to preserve format issue detection (extensions, punctuation, etc.)
+      const standardSuggestions = analyzeInvalidPhone(phone, data.status);
+      
+      // If NANP validation failed, ADD specific NANP guidance at the beginning (highest priority)
+      if (!isNANPValid && digits.length === 10) {
+        const nanpSuggestion = getNANPSuggestion(digits);
+        if (nanpSuggestion) {
+          // Prepend NANP suggestion - it should be shown first as highest confidence
+          suggestions = [nanpSuggestion, ...standardSuggestions];
+        } else {
+          suggestions = standardSuggestions;
+        }
+      } else {
+        suggestions = standardSuggestions;
+      }
     }
 
     return {
@@ -169,7 +207,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const data: VeriphoneResponse = await response.json();
 
-      const isValid = data.phone_valid || false;
+      // CRITICAL: Apply NANP validation with proper digit normalization
+      let digits = phone.replace(/\D/g, '');
+      // Normalize: Remove leading "1" (country code) whenever present and length > 10
+      while (digits.length > 10 && digits.startsWith('1')) {
+        digits = digits.slice(1);
+      }
+      
+      const isApiValid = data.phone_valid || false;
+      const isNANPValid = digits.length === 10 && isValidNANPFormat(digits);
+      
+      // CRITICAL: NANP validation is DECISIVE - reject if NANP fails regardless of Veriphone
+      // A number is only truly valid if BOTH Veriphone AND NANP validation pass
+      let isValid: boolean;
+      if (!isNANPValid) {
+        // NANP validation failed - ALWAYS mark as invalid, ignore Veriphone
+        isValid = false;
+      } else if (!isApiValid) {
+        // Veriphone validation failed - mark as invalid
+        isValid = false;
+      } else {
+        // Both passed - mark as valid
+        isValid = true;
+      }
+      
       const result = {
         valid: isValid,
         phone_type: data.phone_type || 'unknown',
@@ -182,11 +243,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         suggestions: undefined as PhoneSuggestion[] | undefined
       };
 
-      // Add warnings
+      // Add warnings and suggestions
       if (!result.valid) {
-        result.warnings.push('Invalid phone number');
-        // Generate correction suggestions for invalid numbers
-        result.suggestions = analyzeInvalidPhone(phone, data.status);
+        // CRITICAL: ALWAYS run full analysis to get all suggestions (placeholder, transposed, etc.)
+        // Pass ORIGINAL phone string to preserve format issue detection (extensions, punctuation, etc.)
+        const standardSuggestions = analyzeInvalidPhone(phone, data.status);
+        
+        // If NANP validation failed, ADD specific NANP guidance and warning
+        if (!isNANPValid && digits.length === 10) {
+          const nanpSuggestion = getNANPSuggestion(digits);
+          if (nanpSuggestion) {
+            // Add NANP-specific warning
+            result.warnings.push(`Invalid NANP format - ${nanpSuggestion.message}`);
+            // Prepend NANP suggestion - it should be shown first as highest confidence
+            result.suggestions = [nanpSuggestion, ...standardSuggestions];
+          } else {
+            result.warnings.push('Invalid NANP format');
+            result.suggestions = standardSuggestions;
+          }
+        } else {
+          result.warnings.push('Invalid phone number');
+          result.suggestions = standardSuggestions;
+        }
       } else if (result.phone_type === 'fixed_line') {
         result.warnings.push('Landline - cannot receive SMS');
       } else if (result.phone_type === 'voip') {

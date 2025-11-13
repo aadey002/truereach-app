@@ -23,6 +23,8 @@ export interface PhoneSuggestion {
   message: string;
   suggestedNumbers?: string[];
   action?: string;
+  confidence?: number; // 0-100 percentage
+  details?: string; // Additional context like "Digits 2-1 transposed"
 }
 
 export interface PhoneValidationResult {
@@ -58,6 +60,14 @@ export default function ValidationResults({
   const resultsWithSuggestions = results.filter(r => r.suggestions && r.suggestions.length > 0);
   const hasSuggestions = resultsWithSuggestions.length > 0;
 
+  // Helper: Convert confidence score to tier label
+  const getConfidenceTier = (confidence?: number): string => {
+    if (!confidence) return 'MEDIUM';
+    if (confidence >= 80) return 'HIGH';
+    if (confidence >= 50) return 'MEDIUM';
+    return 'LOW';
+  };
+
   const exportCorrectedNumbers = () => {
     try {
       const correctedData: any[] = [];
@@ -74,30 +84,59 @@ export default function ValidationResults({
         if (result.suggestions && result.suggestions.length > 0) {
           const topSuggestion = result.suggestions[0];
           
-          // Only include as "Possible Fix" if there are suggested numbers
-          // Otherwise, it's just guidance (e.g., verify with patient)
+          row['Issue Detected'] = topSuggestion.message;
+          
+          // Add up to 3 suggestions with confidence tiers
           if (topSuggestion.suggestedNumbers && topSuggestion.suggestedNumbers.length > 0) {
-            row['Possible Fix (VERIFY FIRST)'] = topSuggestion.suggestedNumbers[0];
+            row['Suggestion 1'] = topSuggestion.suggestedNumbers[0];
+            row['Confidence Tier 1'] = getConfidenceTier(topSuggestion.confidence);
             
-            // Add alternatives if available
             if (topSuggestion.suggestedNumbers.length > 1) {
-              row['Alternative Option 1'] = topSuggestion.suggestedNumbers[1] || '';
+              row['Suggestion 2'] = topSuggestion.suggestedNumbers[1];
+              row['Confidence Tier 2'] = getConfidenceTier(topSuggestion.confidence);
+            } else {
+              row['Suggestion 2'] = '';
+              row['Confidence Tier 2'] = '';
             }
+            
             if (topSuggestion.suggestedNumbers.length > 2) {
-              row['Alternative Option 2'] = topSuggestion.suggestedNumbers[2] || '';
+              row['Suggestion 3'] = topSuggestion.suggestedNumbers[2];
+              row['Confidence Tier 3'] = getConfidenceTier(topSuggestion.confidence);
+            } else {
+              row['Suggestion 3'] = '';
+              row['Confidence Tier 3'] = '';
             }
           } else {
-            row['Possible Fix (VERIFY FIRST)'] = 'N/A - See Action Required';
+            row['Suggestion 1'] = 'N/A - See Action Required';
+            row['Confidence Tier 1'] = '';
+            row['Suggestion 2'] = '';
+            row['Confidence Tier 2'] = '';
+            row['Suggestion 3'] = '';
+            row['Confidence Tier 3'] = '';
           }
           
-          row['Issue Detected'] = topSuggestion.message;
           row['Action Required'] = topSuggestion.action || 'Verify with patient';
           row['Severity'] = topSuggestion.severity.toUpperCase();
+          row['Verification Required'] = 'YES';
+          
+          // Add details if available (e.g., "Digits 2-1 transposed")
+          if (topSuggestion.details) {
+            row['Notes'] = topSuggestion.details;
+          } else {
+            row['Notes'] = '';
+          }
         } else {
-          row['Possible Fix (VERIFY FIRST)'] = result.valid ? result.phone : 'Unable to determine';
           row['Issue Detected'] = result.valid ? 'None' : 'Invalid number - no automated suggestions available';
+          row['Suggestion 1'] = result.valid ? result.phone : 'Unable to determine';
+          row['Confidence Tier 1'] = result.valid ? 'HIGH' : '';
+          row['Suggestion 2'] = '';
+          row['Confidence Tier 2'] = '';
+          row['Suggestion 3'] = '';
+          row['Confidence Tier 3'] = '';
           row['Action Required'] = 'Verify complete number with patient';
           row['Severity'] = 'HIGH';
+          row['Verification Required'] = 'YES';
+          row['Notes'] = '';
         }
 
         correctedData.push(row);
@@ -331,7 +370,27 @@ export default function ValidationResults({
                                     <Lightbulb className="w-4 h-4 text-yellow-600 mt-0.5" />
                                   )}
                                   <div className="flex-1">
-                                    <p className="text-sm font-medium">{suggestion.message}</p>
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <p className="text-sm font-medium">{suggestion.message}</p>
+                                      {suggestion.confidence !== undefined && (
+                                        <Badge 
+                                          variant="secondary"
+                                          className={`text-xs ${
+                                            getConfidenceTier(suggestion.confidence) === 'HIGH' 
+                                              ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' 
+                                              : getConfidenceTier(suggestion.confidence) === 'MEDIUM'
+                                              ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+                                              : 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400'
+                                          }`}
+                                          title="Confidence tier based on pattern strength - not an accuracy guarantee"
+                                        >
+                                          {getConfidenceTier(suggestion.confidence)} Confidence
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    {suggestion.details && (
+                                      <p className="text-xs text-muted-foreground italic mb-1">{suggestion.details}</p>
+                                    )}
                                     {suggestion.action && (
                                       <p className="text-xs text-muted-foreground mt-1">{suggestion.action}</p>
                                     )}

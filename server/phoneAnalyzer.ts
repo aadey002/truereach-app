@@ -4,6 +4,8 @@ export interface PhoneSuggestion {
   message: string;
   suggestedNumbers?: string[];
   action?: string;
+  confidence?: number; // 0-100 percentage
+  details?: string; // Additional context like "Digits 2-1 transposed"
 }
 
 const VALID_US_AREA_CODES = new Set([
@@ -41,6 +43,27 @@ const STATE_AREA_CODES: Record<string, string[]> = {
   'OH': ['216', '220', '234', '330', '380', '419', '440', '513', '567', '614', '740', '937'],
 };
 
+// Regional area code distribution for smarter suggestions
+const REGIONAL_AREA_CODE_DISTRIBUTION: Record<string, { code: string; weight: number; region: string }[]> = {
+  'MD': [
+    { code: '410', weight: 35, region: 'Baltimore' },
+    { code: '443', weight: 25, region: 'Baltimore overlay' },
+    { code: '240', weight: 20, region: 'Western MD' },
+    { code: '301', weight: 15, region: 'DC suburbs' },
+    { code: '667', weight: 5, region: 'New overlay' },
+  ],
+  'DC': [
+    { code: '202', weight: 100, region: 'Washington DC' },
+  ],
+  'VA': [
+    { code: '703', weight: 30, region: 'Northern VA' },
+    { code: '571', weight: 25, region: 'Northern VA overlay' },
+    { code: '757', weight: 20, region: 'Hampton Roads' },
+    { code: '804', weight: 15, region: 'Richmond' },
+    { code: '540', weight: 10, region: 'Western VA' },
+  ],
+};
+
 export function analyzeInvalidPhone(phone: string, errorMessage?: string): PhoneSuggestion[] {
   const suggestions: PhoneSuggestion[] = [];
   const digits = phone.replace(/\D/g, '');
@@ -50,8 +73,9 @@ export function analyzeInvalidPhone(phone: string, errorMessage?: string): Phone
     suggestions.push({
       type: 'placeholder',
       severity: 'high',
-      message: 'This appears to be a placeholder number (e.g., 000-0000, 555-1234)',
-      action: 'Verify with patient - likely not a real number. Do not use.'
+      message: 'This appears to be a placeholder/test number (000-0000, 555-1234, repeating digits, zero blocks)',
+      action: 'Verify with patient - likely not a real number. Do not use.',
+      confidence: 95 // HIGH tier: Pattern matching is very reliable
     });
     return suggestions;
   }
@@ -62,29 +86,39 @@ export function analyzeInvalidPhone(phone: string, errorMessage?: string): Phone
       type: 'sequential',
       severity: 'high',
       message: 'Sequential number detected (e.g., 123-4567) - may be placeholder',
-      action: 'Verify with patient before using. This pattern suggests test data.'
+      action: 'Verify with patient before using. This pattern suggests test data.',
+      confidence: 90 // HIGH tier: Pattern detection is reliable
     });
+  }
+
+  // Check for transposed digits - GUARDED: Speculative but helpful
+  if (digits.length === 10) {
+    const transposed = detectTransposedDigits(digits);
+    if (transposed) {
+      suggestions.push(transposed);
+    }
   }
 
   // Check for too many digits (might have extension) - SAFE: Deterministic removal
   if (digits.length > 10 && digits.length <= 14) {
     const cleaned = digits.slice(0, 10);
-    const areaCode = cleaned.slice(0, 3);
-    // Only suggest if the resulting area code would be valid
-    if (VALID_US_AREA_CODES.has(areaCode)) {
+    // CRITICAL FIX: Validate the cleaned number using full NANP rules, not just area code
+    if (isValidNANPFormat(cleaned)) {
       suggestions.push({
         type: 'format_issue',
         severity: 'low',
         message: 'Extra digits detected (likely extension or country code)',
         suggestedNumbers: [formatPhone(cleaned)],
-        action: 'Try removing the extension/extra digits'
+        action: 'Try removing the extension/extra digits',
+        confidence: 75 // MEDIUM-HIGH tier: Deterministic removal, likely correct
       });
     } else {
       suggestions.push({
         type: 'format_issue',
         severity: 'medium',
-        message: 'Extra digits detected, but removing them does not yield a valid number',
-        action: 'Verify the complete number with patient'
+        message: 'Extra digits detected, but removing them does not yield a valid NANP number',
+        action: 'Verify the complete number with patient',
+        confidence: 60 // MEDIUM tier: Issue identified but no clear fix
       });
     }
   }
@@ -97,7 +131,8 @@ export function analyzeInvalidPhone(phone: string, errorMessage?: string): Phone
         type: 'invalid_area_code',
         severity: 'high',
         message: `Area code ${areaCode} is not a valid US area code`,
-        action: 'Verify the area code with patient. Common area codes: 410 (Baltimore), 301 (Maryland), 202 (DC), 212 (NYC), 213 (LA)'
+        action: 'Verify the area code with patient. Common area codes: 410 (Baltimore), 301 (Maryland), 202 (DC), 212 (NYC), 213 (LA)',
+        confidence: 85 // HIGH tier: Identification is reliable
       });
     }
   }
@@ -108,21 +143,23 @@ export function analyzeInvalidPhone(phone: string, errorMessage?: string): Phone
       type: 'missing_digits',
       severity: 'high',
       message: `Missing ${10 - digits.length} digit(s) - incomplete number`,
-      action: 'Request complete number from patient. Do not guess missing digits.'
+      action: 'Request complete number from patient. Do not guess missing digits.',
+      confidence: 95 // HIGH tier: Detection is very reliable
     });
   }
 
   // Check for format issues - SAFE: Just cleanup, no number changes
   const formatIssues = detectFormatIssues(phone);
   if (formatIssues.length > 0 && digits.length === 10) {
-    const areaCode = digits.slice(0, 3);
-    if (VALID_US_AREA_CODES.has(areaCode)) {
+    // CRITICAL FIX: Validate using full NANP rules before suggesting format cleanup
+    if (isValidNANPFormat(digits)) {
       suggestions.push({
         type: 'format_issue',
         severity: 'low',
         message: formatIssues.join(', '),
         suggestedNumbers: [formatPhone(digits)],
-        action: 'Format cleanup - same digits, standardized format'
+        action: 'Format cleanup - same digits, standardized format',
+        confidence: 90 // HIGH tier: Deterministic formatting
       });
     }
   }
@@ -133,7 +170,8 @@ export function analyzeInvalidPhone(phone: string, errorMessage?: string): Phone
       type: 'format_issue',
       severity: 'high',
       message: 'Unable to validate this phone number',
-      action: 'Verify complete number with patient. Ensure 10-digit US format.'
+      action: 'Verify complete number with patient. Ensure 10-digit US format.',
+      confidence: 50 // MEDIUM tier: Generic guidance
     });
   }
 
@@ -153,13 +191,239 @@ function isPlaceholder(digits: string): boolean {
   // Check if all digits are the same
   if (digits.length > 0 && new Set(digits).size === 1) return true;
   
-  // Check for 555 area code with 0000-9999 (classic fake numbers)
+  // Check for 555 area code with common fake patterns
   if (digits.startsWith('555') && digits.length === 10) {
     const lastFour = digits.slice(6);
-    if (lastFour === '0000' || lastFour === '1234') return true;
+    if (lastFour === '0000' || lastFour === '1234' || lastFour === '0100') return true;
+  }
+  
+  // Check for zero blocks (e.g., 410-000-0000, XXX-000-XXXX)
+  if (digits.length === 10) {
+    const exchange = digits.slice(3, 6);
+    const lastFour = digits.slice(6);
+    if (exchange === '000' || lastFour === '0000') return true;
+  }
+  
+  // Check for repeating patterns in last 7 digits (e.g., 443-555-5555)
+  if (digits.length === 10) {
+    const last7 = digits.slice(3);
+    const firstDigit = last7[0];
+    if (last7.split('').every(d => d === firstDigit)) return true;
   }
   
   return false;
+}
+
+// NANP failure codes for precise error reporting
+type NANPFailureCode = 
+  | 'invalid_area_code'
+  | 'reserved_000_exchange'
+  | 'reserved_555_exchange'
+  | 'reserved_911_exchange'
+  | 'n11_reserved'
+  | 'leading_digit_violation'
+  | 'zero_line';
+
+// Shared NANP validation - returns validation result and specific failure code
+// This ensures validation and suggestion logic stay in perfect lockstep
+function getNANPValidation(digits: string): { valid: boolean; failureCode?: NANPFailureCode } {
+  if (digits.length !== 10) return { valid: false };
+  
+  const areaCode = digits.slice(0, 3);
+  const exchangeCode = digits.slice(3, 6);
+  const lineNumber = digits.slice(6, 10);
+  
+  // Check area code is valid (highest priority check)
+  if (!VALID_US_AREA_CODES.has(areaCode)) {
+    return { valid: false, failureCode: 'invalid_area_code' };
+  }
+  
+  // CRITICAL: Check exchange[0] is NOT 0 or 1 BEFORE other exchange checks
+  // This prevents "111" from being misidentified as N11
+  if (exchangeCode[0] === '0' || exchangeCode[0] === '1') {
+    return { valid: false, failureCode: 'leading_digit_violation' };
+  }
+  
+  // Specific reserved exchange codes
+  if (exchangeCode === '000') {
+    return { valid: false, failureCode: 'reserved_000_exchange' };
+  }
+  
+  if (exchangeCode === '555') {
+    return { valid: false, failureCode: 'reserved_555_exchange' };
+  }
+  
+  if (exchangeCode === '911') {
+    return { valid: false, failureCode: 'reserved_911_exchange' };
+  }
+  
+  // N11 codes (211-811) - now safe because we already rejected 0xx/1xx above
+  if (exchangeCode.endsWith('11')) {
+    return { valid: false, failureCode: 'n11_reserved' };
+  }
+  
+  // Line number cannot be all zeros
+  if (lineNumber === '0000') {
+    return { valid: false, failureCode: 'zero_line' };
+  }
+  
+  return { valid: true };
+}
+
+// Helper: Validate full NANP (North American Numbering Plan) format
+// EXPORTED for use in routes.ts to enforce NANP rules on all validations
+// This is now a thin boolean wrapper around getNANPValidation
+export function isValidNANPFormat(digits: string): boolean {
+  return getNANPValidation(digits).valid;
+}
+
+// Helper: Get NANP-specific suggestion if NANP validation failed
+// Returns a high-confidence suggestion explaining WHY NANP failed
+// EXPORTED for use in routes.ts to provide detailed NANP guidance
+// Now uses shared getNANPValidation() to ensure perfect lockstep with validation
+export function getNANPSuggestion(digits: string): PhoneSuggestion | null {
+  if (digits.length !== 10) return null;
+  
+  const { valid, failureCode } = getNANPValidation(digits);
+  if (valid) return null;
+  
+  // Extract parts for detailed messaging
+  const areaCode = digits.slice(0, 3);
+  const exchangeCode = digits.slice(3, 6);
+  
+  // Switch on failure code to provide specific, actionable guidance
+  switch (failureCode) {
+    case 'invalid_area_code':
+      return {
+        type: 'invalid_area_code',
+        severity: 'high',
+        message: `Invalid area code: ${areaCode} is not a valid US/Canada area code`,
+        action: 'Verify with patient - this area code does not exist in North America',
+        confidence: 95
+      };
+    
+    case 'reserved_555_exchange':
+      return {
+        type: 'format_issue',
+        severity: 'high',
+        message: 'Reserved exchange code: 555 is reserved for directory assistance and fictitious numbers',
+        action: 'Verify with patient - this is likely a test/placeholder number, not a real phone',
+        confidence: 95,
+        details: 'NANP rule: 555 exchange is reserved for information services and fictional use in media'
+      };
+    
+    case 'reserved_911_exchange':
+      return {
+        type: 'format_issue',
+        severity: 'high',
+        message: 'Reserved exchange code: 911 is reserved for emergency services',
+        action: 'Verify with patient - this is the emergency services number, not a valid phone number',
+        confidence: 95,
+        details: 'NANP rule: 911 is reserved for emergency dialing and cannot be assigned to phone numbers'
+      };
+    
+    case 'reserved_000_exchange':
+      return {
+        type: 'format_issue',
+        severity: 'high',
+        message: 'Reserved exchange code: 000 is not valid for phone numbers',
+        action: 'Verify with patient - this appears to be a test or invalid number',
+        confidence: 95,
+        details: 'NANP rule: 000 exchange is reserved and cannot be assigned to phone numbers'
+      };
+    
+    case 'n11_reserved':
+      const serviceName = exchangeCode === '211' ? 'community information' :
+                         exchangeCode === '311' ? 'non-emergency services' :
+                         exchangeCode === '411' ? 'directory assistance' :
+                         exchangeCode === '511' ? 'traffic/travel info' :
+                         exchangeCode === '611' ? 'repair service' :
+                         exchangeCode === '711' ? 'relay service' :
+                         exchangeCode === '811' ? 'utility location' : 'special service';
+      
+      return {
+        type: 'format_issue',
+        severity: 'high',
+        message: `Reserved N11 code: ${exchangeCode} is reserved for ${serviceName}`,
+        action: 'Verify with patient - N11 codes are not valid phone numbers, they are special service codes',
+        confidence: 95,
+        details: `NANP rule: N11 codes (211-911) are reserved for abbreviated dialing services, not phone numbers`
+      };
+    
+    case 'leading_digit_violation':
+      return {
+        type: 'format_issue',
+        severity: 'high',
+        message: `Invalid exchange format: Exchange code ${exchangeCode} cannot start with ${exchangeCode[0]}`,
+        action: 'Verify with patient - exchange code must start with digits 2-9',
+        confidence: 95,
+        details: 'NANP rule: Exchange codes must start with digits 2-9, not 0 or 1'
+      };
+    
+    case 'zero_line':
+      return {
+        type: 'format_issue',
+        severity: 'high',
+        message: 'Invalid line number: Line number cannot be 0000',
+        action: 'Verify with patient - this appears to be a test or incomplete number',
+        confidence: 95,
+        details: 'NANP rule: Line number (last 4 digits) cannot be all zeros'
+      };
+    
+    default:
+      // Fallback for unknown failure codes (should never happen)
+      return {
+        type: 'format_issue',
+        severity: 'high',
+        message: 'Invalid NANP format',
+        action: 'Verify with patient - this number does not meet North American Numbering Plan requirements',
+        confidence: 95
+      };
+  }
+}
+
+// GUARDED TRANSPOSED DIGIT DETECTION - Architect-approved with safety guardrails
+function detectTransposedDigits(digits: string): PhoneSuggestion | null {
+  // SAFETY GUARDRAIL: Only work with exactly 10 digits
+  if (digits.length !== 10) return null;
+  
+  const validSuggestions: { number: string; swapPosition: string }[] = [];
+  
+  // SAFETY GUARDRAIL: Try only adjacent swaps (max 9 positions)
+  for (let i = 0; i < digits.length - 1; i++) {
+    // Create swapped version
+    const arr = digits.split('');
+    [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]]; // Swap adjacent digits
+    const swapped = arr.join('');
+    
+    // CRITICAL FIX: Fully validate the swapped number using NANP rules
+    // Not just area code, but also exchange code and line number validity
+    if (isValidNANPFormat(swapped)) {
+      const formatted = formatPhone(swapped);
+      // Describe which digits were swapped (1-indexed for human readability)
+      const swapDescription = `Digits at positions ${i + 1}-${i + 2} swapped`;
+      validSuggestions.push({
+        number: formatted,
+        swapPosition: swapDescription
+      });
+    }
+    
+    // SAFETY GUARDRAIL: Limit to max 3 suggestions
+    if (validSuggestions.length >= 3) break;
+  }
+  
+  if (validSuggestions.length === 0) return null;
+  
+  // Return suggestion with LOW confidence tier (speculative)
+  return {
+    type: 'transposed',
+    severity: 'medium',
+    message: 'Possible transposed digits detected',
+    suggestedNumbers: validSuggestions.map(s => s.number),
+    details: validSuggestions.map(s => s.swapPosition).join('; '),
+    confidence: 40, // LOW tier: This is speculative, requires verification
+    action: 'SPECULATIVE SUGGESTION - Verify with patient before using. These numbers pass basic NANP validation but may not be correct.'
+  };
 }
 
 function isSequential(digits: string): boolean {
