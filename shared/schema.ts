@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+// Export auth schema for Replit Auth integration
+export * from "./models/auth";
+
 export const phoneValidationResultSchema = z.object({
   phone: z.string(),
   valid: z.boolean(),

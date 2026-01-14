@@ -5,6 +5,7 @@ import Papa from "papaparse";
 import * as XLSX from "xlsx";
 import { validationResponseSchema } from "@shared/schema";
 import { analyzeInvalidPhone, isValidNANPFormat, getNANPSuggestion, type PhoneSuggestion } from "./phoneAnalyzer";
+import { setupAuth, registerAuthRoutes } from "./replit_integrations/auth";
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -161,6 +162,10 @@ function parsePhoneNumbers(fileBuffer: Buffer, filename: string): string[] {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Setup Replit Auth BEFORE other routes
+  await setupAuth(app);
+  registerAuthRoutes(app);
+
   // Enable CORS for widget integration
   app.use('/api/validate-realtime', (req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
