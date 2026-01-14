@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, XCircle, AlertTriangle, Smartphone } from "lucide-react";
+import { CheckCircle, XCircle, AlertTriangle, Smartphone, Phone, Loader2 } from "lucide-react";
 
 interface ValidationResult {
   status: 'valid' | 'invalid' | 'error';
@@ -18,15 +18,12 @@ interface ValidationResult {
 }
 
 export default function WidgetDemo() {
-  const [patientPhone, setPatientPhone] = useState("");
-  const [emergencyPhone, setEmergencyPhone] = useState("");
-  const [patientResult, setPatientResult] = useState<ValidationResult | null>(null);
-  const [emergencyResult, setEmergencyResult] = useState<ValidationResult | null>(null);
-  const [patientLoading, setPatientLoading] = useState(false);
-  const [emergencyLoading, setEmergencyLoading] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [result, setResult] = useState<ValidationResult | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const validatePhone = async (phone: string, setResult: (result: ValidationResult | null) => void, setLoading: (loading: boolean) => void) => {
-    if (!phone.trim()) {
+  const validatePhone = async () => {
+    if (!phoneNumber.trim()) {
       setResult(null);
       return;
     }
@@ -36,7 +33,7 @@ export default function WidgetDemo() {
       const response = await fetch('/api/validate-realtime', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, country: 'US' })
+        body: JSON.stringify({ phone: phoneNumber, country: 'US' })
       });
 
       if (!response.ok) {
@@ -44,16 +41,14 @@ export default function WidgetDemo() {
         throw new Error(error.error || 'Validation service unavailable');
       }
 
-      const result = await response.json();
+      const data = await response.json();
       
-      // Check for backend errors in the response
-      if (result.error) {
-        throw new Error(result.error);
+      if (data.error) {
+        throw new Error(data.error);
       }
       
-      // Add status based on validation result
-      result.status = result.valid ? 'valid' : 'invalid';
-      setResult(result);
+      data.status = data.valid ? 'valid' : 'invalid';
+      setResult(data);
     } catch (error) {
       console.error('Validation error:', error);
       setResult({
@@ -62,220 +57,169 @@ export default function WidgetDemo() {
         phone_type: 'error',
         can_receive_sms: false,
         carrier: 'Unknown',
-        error: error instanceof Error ? error.message : 'Validation service unavailable - please try again later'
+        error: error instanceof Error ? error.message : 'Validation service unavailable'
       });
     } finally {
       setLoading(false);
     }
   };
 
-  const ValidationDisplay = ({ result, loading }: { result: ValidationResult | null; loading: boolean }) => {
-    if (loading) {
-      return (
-        <div className="mt-3 p-3 rounded-lg bg-muted text-muted-foreground text-sm italic">
-          Validating...
-        </div>
-      );
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      validatePhone();
     }
+  };
 
-    if (!result) return null;
-
-    // Infrastructure/Service Error State
-    if (result.status === 'error') {
-      return (
-        <div className="mt-3 p-4 rounded-lg border-2 bg-orange-50 border-orange-500 dark:bg-orange-950/20">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-orange-600" />
-            <span className="text-orange-800 dark:text-orange-300 font-medium">
-              Validation Service Error
-            </span>
-          </div>
-          <div className="mt-2 text-sm text-orange-800 dark:text-orange-300">
-            {result.error || 'Unable to validate phone number at this time. Please try again later.'}
-          </div>
-        </div>
-      );
-    }
-
-    // Valid or Invalid Phone Number State
-    return (
-      <div className={`mt-3 p-4 rounded-lg border-2 ${result.valid ? 'bg-green-50 border-green-500 dark:bg-green-950/20' : 'bg-red-50 border-red-500 dark:bg-red-950/20'}`}>
-        <div className="flex items-center gap-2">
-          {result.valid ? (
-            <>
-              <CheckCircle className="w-5 h-5 text-green-600" />
-              <span className="text-green-800 dark:text-green-300 font-medium">
-                Valid {result.phone_type}
-              </span>
-              {result.can_receive_sms && (
-                <Badge className="bg-blue-500 hover:bg-blue-600">
-                  <Smartphone className="w-3 h-3 mr-1" />
-                  SMS OK
-                </Badge>
-              )}
-            </>
-          ) : (
-            <>
-              <XCircle className="w-5 h-5 text-red-600" />
-              <span className="text-red-800 dark:text-red-300 font-medium">Invalid phone number</span>
-            </>
-          )}
-        </div>
-        
-        {/* Show carrier and formatted numbers when available */}
-        {(result.carrier || result.formatted || result.local_format) && (
-          <div className="mt-2 space-y-1">
-            {result.carrier && result.carrier !== 'Unknown' && (
-              <div className="text-sm text-muted-foreground">
-                Carrier: {result.carrier}
-              </div>
-            )}
-            {result.formatted && (
-              <div className="text-sm text-muted-foreground">
-                International: {result.formatted}
-              </div>
-            )}
-            {result.local_format && result.local_format !== result.formatted && (
-              <div className="text-sm text-muted-foreground">
-                Local format: {result.local_format}
-              </div>
-            )}
-          </div>
-        )}
-
-        {result.warnings && result.warnings.length > 0 && (
-          <div className="mt-3 space-y-2">
-            {result.warnings.map((warning, index) => (
-              <div key={index} className="flex items-center gap-2 p-2 bg-orange-50 dark:bg-orange-950/20 border border-orange-300 dark:border-orange-800 rounded text-sm">
-                <AlertTriangle className="w-4 h-4 text-orange-600" />
-                <span className="text-orange-800 dark:text-orange-300">{warning}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    );
+  const resetDemo = () => {
+    setPhoneNumber("");
+    setResult(null);
   };
 
   return (
-    <div className="max-w-5xl mx-auto">
-      <Card className="p-8 mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <Smartphone className="w-10 h-10 text-primary" />
-            <div>
-              <h1 className="text-4xl font-bold">Real-Time Phone Validation Demo</h1>
-              <p className="text-muted-foreground mt-2">
-                This demonstrates how the phone validator works in real-time as you type.
-                Perfect for integrating into patient registration forms!
-              </p>
+    <div className="max-w-2xl mx-auto py-8 px-4">
+      <Card className="mb-8">
+        <CardHeader className="text-center">
+          <div className="flex justify-center mb-4">
+            <div className="p-4 rounded-full bg-primary/10">
+              <Phone className="w-12 h-12 text-primary" />
             </div>
           </div>
-        </Card>
-
-        <Card className="p-8 mb-8">
-          <h2 className="text-2xl font-semibold mb-6">Try It Out</h2>
-          
-          <div className="space-y-6">
-            <div>
-              <Label htmlFor="patient-phone" className="text-base font-semibold">
-                Patient Phone Number
-              </Label>
-              <Input
-                id="patient-phone"
-                type="tel"
-                placeholder="(555) 123-4567"
-                value={patientPhone}
-                onChange={(e) => setPatientPhone(e.target.value)}
-                onBlur={() => validatePhone(patientPhone, setPatientResult, setPatientLoading)}
-                className="mt-2"
-                data-testid="input-patient-phone"
-              />
-              <ValidationDisplay result={patientResult} loading={patientLoading} />
-            </div>
-
-            <div>
-              <Label htmlFor="emergency-phone" className="text-base font-semibold">
-                Emergency Contact
-              </Label>
-              <Input
-                id="emergency-phone"
-                type="tel"
-                placeholder="555-234-5678"
-                value={emergencyPhone}
-                onChange={(e) => setEmergencyPhone(e.target.value)}
-                onBlur={() => validatePhone(emergencyPhone, setEmergencyResult, setEmergencyLoading)}
-                className="mt-2"
-                data-testid="input-emergency-phone"
-              />
-              <ValidationDisplay result={emergencyResult} loading={emergencyLoading} />
-            </div>
+          <CardTitle className="text-3xl">Try Phone Validation</CardTitle>
+          <CardDescription className="text-lg">
+            Enter any phone number to see instant validation results
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex gap-3">
+            <Input
+              type="tel"
+              placeholder="Enter phone number..."
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              onKeyPress={handleKeyPress}
+              className="text-lg h-12"
+              data-testid="input-phone-demo"
+            />
+            <Button 
+              onClick={validatePhone} 
+              disabled={loading || !phoneNumber.trim()}
+              className="h-12 px-6"
+              data-testid="button-validate"
+            >
+              {loading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                "Validate"
+              )}
+            </Button>
           </div>
-        </Card>
 
-        <Card className="p-8 mb-8">
-          <h2 className="text-2xl font-semibold mb-4">How to Integrate This</h2>
-          <p className="text-muted-foreground mb-4">
-            Add this JavaScript to any webpage to enable real-time validation:
-          </p>
-
-          <div className="bg-slate-900 text-slate-100 p-6 rounded-lg overflow-x-auto">
-            <pre className="text-sm">
-{`async function validatePhone(phone) {
-  const response = await fetch('/api/validate-realtime', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ phone: phone, country: 'US' })
-  });
-  
-  const result = await response.json();
-  
-  if (result.valid) {
-    console.log('✓ Valid', result.phone_type);
-    if (result.can_receive_sms) {
-      console.log('SMS OK');
-    }
-  } else {
-    console.log('✗ Invalid phone number');
-  }
-}`}
-            </pre>
-          </div>
-        </Card>
-
-        <Card className="p-8">
-          <h2 className="text-2xl font-semibold mb-4">Value Proposition</h2>
-          <div className="space-y-4">
-            <div className="flex items-start gap-4 p-4 rounded-lg border hover-elevate">
-              <div className="flex-1">
-                <h3 className="font-semibold text-lg">Batch Upload</h3>
-                <p className="text-muted-foreground mt-1">Clean existing database</p>
-              </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-primary">$79/month</div>
-              </div>
+          {result && (
+            <div className={`p-6 rounded-lg border-2 transition-all ${
+              result.status === 'error' 
+                ? 'bg-orange-50 border-orange-400 dark:bg-orange-950/20 dark:border-orange-600' 
+                : result.valid 
+                  ? 'bg-green-50 border-green-400 dark:bg-green-950/20 dark:border-green-600' 
+                  : 'bg-red-50 border-red-400 dark:bg-red-950/20 dark:border-red-600'
+            }`}>
+              {result.status === 'error' ? (
+                <div className="flex flex-col items-center text-center gap-3">
+                  <AlertTriangle className="w-12 h-12 text-orange-500" />
+                  <div>
+                    <h3 className="text-lg font-semibold text-orange-800 dark:text-orange-300">
+                      Service Error
+                    </h3>
+                    <p className="text-orange-700 dark:text-orange-400 mt-1">
+                      {result.error}
+                    </p>
+                  </div>
+                </div>
+              ) : result.valid ? (
+                <div className="flex flex-col items-center text-center gap-3">
+                  <CheckCircle className="w-12 h-12 text-green-500" />
+                  <div>
+                    <h3 className="text-lg font-semibold text-green-800 dark:text-green-300">
+                      Valid Phone Number
+                    </h3>
+                    <div className="flex flex-wrap justify-center gap-2 mt-3">
+                      <Badge variant="secondary" className="text-sm">
+                        {result.phone_type === 'mobile' ? 'Mobile' : 
+                         result.phone_type === 'fixed_line' ? 'Landline' : 
+                         result.phone_type === 'voip' ? 'VoIP' : 
+                         result.phone_type}
+                      </Badge>
+                      {result.can_receive_sms && (
+                        <Badge className="bg-blue-500 hover:bg-blue-600 text-sm">
+                          <Smartphone className="w-3 h-3 mr-1" />
+                          SMS Capable
+                        </Badge>
+                      )}
+                    </div>
+                    {result.carrier && result.carrier !== 'Unknown' && (
+                      <p className="text-muted-foreground mt-2">
+                        Carrier: {result.carrier}
+                      </p>
+                    )}
+                    {result.formatted && (
+                      <p className="text-muted-foreground text-sm mt-1">
+                        Formatted: {result.formatted}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center text-center gap-3">
+                  <XCircle className="w-12 h-12 text-red-500" />
+                  <div>
+                    <h3 className="text-lg font-semibold text-red-800 dark:text-red-300">
+                      Invalid Phone Number
+                    </h3>
+                    {result.warnings && result.warnings.length > 0 && (
+                      <p className="text-red-700 dark:text-red-400 mt-1 text-sm">
+                        {result.warnings[0]}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
+          )}
 
-            <div className="flex items-start gap-4 p-4 rounded-lg border hover-elevate">
-              <div className="flex-1">
-                <h3 className="font-semibold text-lg">Real-Time API</h3>
-                <p className="text-muted-foreground mt-1">Validate as you enter data</p>
-              </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-primary">$199/month</div>
-              </div>
+          {result && (
+            <div className="flex justify-center">
+              <Button variant="outline" onClick={resetDemo} data-testid="button-try-another">
+                Try Another Number
+              </Button>
             </div>
+          )}
+        </CardContent>
+      </Card>
 
-            <div className="flex items-start gap-4 p-4 rounded-lg border hover-elevate">
-              <div className="flex-1">
-                <h3 className="font-semibold text-lg">Full Integration</h3>
-                <p className="text-muted-foreground mt-1">Embedded in your EMR</p>
-              </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-primary">$399/month</div>
-              </div>
-            </div>
-          </div>
-        </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-xl">What This Demo Shows</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ul className="space-y-3">
+            <li className="flex items-start gap-3">
+              <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+              <span>Instant validation of US phone numbers</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <Smartphone className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
+              <span>SMS capability detection for patient outreach</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <Phone className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+              <span>Phone type identification (mobile, landline, VoIP)</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" />
+              <span>Smart detection of test and placeholder numbers</span>
+            </li>
+          </ul>
+        </CardContent>
+      </Card>
     </div>
   );
 }

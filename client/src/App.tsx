@@ -8,6 +8,7 @@ import Landing from "@/pages/Landing";
 import BatchUpload from "@/pages/BatchUpload";
 import WidgetDemo from "@/pages/WidgetDemo";
 import WidgetIntegration from "@/pages/WidgetIntegration";
+import DeveloperDocs from "@/pages/DeveloperDocs";
 import Pricing from "@/pages/Pricing";
 import NotFound from "@/pages/not-found";
 
@@ -18,6 +19,7 @@ function Router() {
       <Route path="/batch" component={BatchUpload} />
       <Route path="/widget-demo" component={WidgetDemo} />
       <Route path="/widget-integration" component={WidgetIntegration} />
+      <Route path="/developer-docs" component={DeveloperDocs} />
       <Route path="/pricing" component={Pricing} />
       <Route component={NotFound} />
     </Switch>
