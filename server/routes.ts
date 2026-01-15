@@ -7,6 +7,17 @@ import { validationResponseSchema } from "@shared/schema";
 import { analyzeInvalidPhone, isValidNANPFormat, getNANPSuggestion, type PhoneSuggestion } from "./phoneAnalyzer";
 import { setupAuth, registerAuthRoutes } from "./replit_integrations/auth";
 
+// PayPal integration - conditionally import based on environment variables
+let paypalModule: any = null;
+const paypalEnabled = !!(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET);
+if (paypalEnabled) {
+  import("./paypal").then(mod => {
+    paypalModule = mod;
+  }).catch(err => {
+    console.warn("PayPal module not loaded:", err.message);
+  });
+}
+
 const upload = multer({ storage: multer.memoryStorage() });
 
 interface VeriphoneResponse {
@@ -165,6 +176,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup Replit Auth BEFORE other routes
   await setupAuth(app);
   registerAuthRoutes(app);
+
+  // PayPal routes (only if configured)
+  if (paypalEnabled) {
+    app.get("/paypal/setup", async (req, res) => {
+      if (paypalModule) {
+        await paypalModule.loadPaypalDefault(req, res);
+      } else {
+        res.status(503).json({ error: "PayPal is initializing, please try again" });
+      }
+    });
+
+    app.post("/paypal/order", async (req, res) => {
+      if (paypalModule) {
+        await paypalModule.createPaypalOrder(req, res);
+      } else {
+        res.status(503).json({ error: "PayPal is initializing, please try again" });
+      }
+    });
+
+    app.post("/paypal/order/:orderID/capture", async (req, res) => {
+      if (paypalModule) {
+        await paypalModule.capturePaypalOrder(req, res);
+      } else {
+        res.status(503).json({ error: "PayPal is initializing, please try again" });
+      }
+    });
+  }
 
   // Enable CORS for widget integration
   app.use('/api/validate-realtime', (req, res, next) => {
