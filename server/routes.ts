@@ -177,6 +177,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   await setupAuth(app);
   registerAuthRoutes(app);
 
+  // Developer password verification endpoint
+  app.post('/api/verify-dev-password', (req, res) => {
+    const { password } = req.body;
+    const devPassword = process.env.DEV_DOCS_PASSWORD;
+    
+    if (!devPassword) {
+      // If no password is set, allow access (for initial setup)
+      return res.json({ valid: true });
+    }
+    
+    const isValid = password === devPassword;
+    res.json({ valid: isValid });
+  });
+
   // PayPal routes (only if configured)
   if (paypalEnabled) {
     app.get("/paypal/setup", async (req, res) => {

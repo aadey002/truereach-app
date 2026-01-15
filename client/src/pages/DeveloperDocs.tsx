@@ -5,12 +5,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Code, FileJson, Settings, Zap, Lock, CheckCircle, LogIn } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Code, FileJson, Settings, Zap, Lock, CheckCircle, LogIn, Key } from "lucide-react";
 
 export default function DeveloperDocs() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const { toast } = useToast();
   const [showContent, setShowContent] = useState(false);
+  const [passwordVerified, setPasswordVerified] = useState(false);
+  const [password, setPassword] = useState("");
+  const [verifying, setVerifying] = useState(false);
 
   useEffect(() => {
     if (!isLoading) {
@@ -18,9 +23,47 @@ export default function DeveloperDocs() {
         setShowContent(true);
       } else {
         setShowContent(false);
+        setPasswordVerified(false);
       }
     }
   }, [isAuthenticated, isLoading]);
+
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setVerifying(true);
+    
+    try {
+      const response = await fetch("/api/verify-dev-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.valid) {
+        setPasswordVerified(true);
+        toast({
+          title: "Access Granted",
+          description: "Welcome to the Developer Documentation.",
+        });
+      } else {
+        toast({
+          title: "Invalid Password",
+          description: "Please check your developer access code and try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Verification Failed",
+        description: "Unable to verify password. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setVerifying(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -51,6 +94,56 @@ export default function DeveloperDocs() {
                 Log In to Access Docs
               </Button>
             </a>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!passwordVerified) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Card className="max-w-md w-full">
+          <CardHeader className="text-center">
+            <Key className="w-12 h-12 text-primary mx-auto mb-4" />
+            <CardTitle>Developer Access Code</CardTitle>
+            <CardDescription className="mt-2">
+              Welcome, {user?.firstName || 'Developer'}! Please enter your developer access code to view the documentation.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handlePasswordSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="dev-password">Access Code</Label>
+                <Input
+                  id="dev-password"
+                  type="password"
+                  placeholder="Enter developer access code"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  data-testid="input-dev-password"
+                  autoFocus
+                />
+              </div>
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={verifying || !password}
+                data-testid="button-verify-password"
+              >
+                {verifying ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
+                    Verifying...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Access Documentation
+                  </>
+                )}
+              </Button>
+            </form>
           </CardContent>
         </Card>
       </div>
