@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Activity, AlertCircle, Info, ChevronDown, ChevronUp } from "lucide-react";
+import { Activity, AlertCircle, Info, ChevronDown, ChevronUp, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -38,6 +38,49 @@ export default function Home() {
   const [removeDuplicates, setRemoveDuplicates] = useState(false);
   const [showDuplicateList, setShowDuplicateList] = useState(false);
   const { toast } = useToast();
+
+  const downloadResultsAsExcel = () => {
+    if (!results) return;
+
+    const excelData = results.map(r => ({
+      'Phone Number': r.phone,
+      'Status': r.valid ? 'Valid' : 'Invalid',
+      'Phone Type': r.phone_type || 'Unknown',
+      'Can Receive SMS': r.can_receive_sms ? 'Yes' : 'No',
+      'Carrier': r.carrier || 'Unknown',
+      'Is Duplicate': r.is_duplicate ? 'Yes' : 'No',
+      'Suggested Fix (VERIFY FIRST)': r.suggestions && r.suggestions.length > 0 
+        ? r.suggestions.slice(0, 3).map(s => 
+            s.suggestedNumbers && s.suggestedNumbers.length > 0 
+              ? `${s.suggestedNumbers[0]} (${s.confidence || 0}%)`
+              : s.message
+          ).join('; ')
+        : ''
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Validation Results');
+
+    const colWidths = [
+      { wch: 20 },
+      { wch: 10 },
+      { wch: 12 },
+      { wch: 15 },
+      { wch: 25 },
+      { wch: 12 },
+      { wch: 40 }
+    ];
+    worksheet['!cols'] = colWidths;
+
+    const fileName = `phone_validation_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+
+    toast({
+      title: "Download Complete",
+      description: `Results saved as ${fileName}`,
+    });
+  };
 
   const normalizePhone = (phone: string): string => {
     // Strip all non-digit characters except + at the start
@@ -471,19 +514,29 @@ export default function Home() {
 
           {results && stats && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
                 <h2 className="text-2xl font-semibold">Validation Results</h2>
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    setResults(null);
-                    setStats(null);
-                    setSelectedFile(null);
-                  }}
-                  data-testid="button-new-validation"
-                >
-                  New Validation
-                </Button>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="default"
+                    onClick={downloadResultsAsExcel}
+                    data-testid="button-download-excel"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Download Excel
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setResults(null);
+                      setStats(null);
+                      setSelectedFile(null);
+                    }}
+                    data-testid="button-new-validation"
+                  >
+                    New Validation
+                  </Button>
+                </div>
               </div>
               <ValidationResults
                 results={results}
