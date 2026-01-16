@@ -299,9 +299,9 @@ export default function Landing() {
               className="w-full"
               variant="outline"
               data-testid="button-view-integration"
-              onClick={() => window.location.href = '/widget-integration'}
+              onClick={() => window.location.href = '/developer-docs'}
             >
-              View Integration
+              Developer Docs
             </Button>
           </Card>
         </div>

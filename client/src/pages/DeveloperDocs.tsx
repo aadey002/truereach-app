@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Code, FileJson, Settings, Zap, Lock, CheckCircle, LogIn, Key } from "lucide-react";
+import { Code, FileJson, Settings, Zap, Lock, CheckCircle, LogIn, Key, Code2, Smartphone, AlertCircle } from "lucide-react";
 
 export default function DeveloperDocs() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -163,10 +163,14 @@ export default function DeveloperDocs() {
       </div>
 
       <Tabs defaultValue="api" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="api" data-testid="tab-api">
             <FileJson className="w-4 h-4 mr-2" />
             API Reference
+          </TabsTrigger>
+          <TabsTrigger value="widget" data-testid="tab-widget">
+            <Code2 className="w-4 h-4 mr-2" />
+            Widget
           </TabsTrigger>
           <TabsTrigger value="integration" data-testid="tab-integration">
             <Zap className="w-4 h-4 mr-2" />
@@ -273,6 +277,151 @@ Form field: file (CSV or XLSX file)`}
   ]
 }`}
                 </pre>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="widget" className="space-y-6">
+          <Card className="p-6 mb-6">
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-bold mb-2">EHR/Pharmacy Management Widget</h2>
+              <p className="text-muted-foreground">
+                Drop-in JavaScript widget for real-time phone validation in any healthcare system
+              </p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="p-4 border rounded-lg text-center">
+                <Zap className="w-8 h-8 text-primary mx-auto mb-2" />
+                <h3 className="font-semibold mb-1">3-Minute Setup</h3>
+                <p className="text-sm text-muted-foreground">Just 2 lines of JavaScript</p>
+              </div>
+              <div className="p-4 border rounded-lg text-center">
+                <Lock className="w-8 h-8 text-primary mx-auto mb-2" />
+                <h3 className="font-semibold mb-1">HIPAA Ready</h3>
+                <p className="text-sm text-muted-foreground">No PHI stored</p>
+              </div>
+              <div className="p-4 border rounded-lg text-center">
+                <Settings className="w-8 h-8 text-primary mx-auto mb-2" />
+                <h3 className="font-semibold mb-1">Customizable</h3>
+                <p className="text-sm text-muted-foreground">Match your EHR's style</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CheckCircle className="text-green-600" />
+                Quick Start Guide
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <h4 className="font-semibold mb-2">Step 1: Include the Widget Script</h4>
+                <p className="text-muted-foreground mb-2">Add this to your HTML page or EHR form template:</p>
+                <pre className="bg-slate-900 text-slate-100 p-4 rounded-lg overflow-x-auto text-sm">
+{`<script src="${typeof window !== 'undefined' ? window.location.origin : 'https://true-reach.app'}/phone-validator-widget.js"></script>`}
+                </pre>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2">Step 2: Initialize the Widget</h4>
+                <pre className="bg-slate-900 text-slate-100 p-4 rounded-lg overflow-x-auto text-sm">
+{`<script>
+  PhoneValidatorWidget.init({
+    apiUrl: '${typeof window !== 'undefined' ? window.location.origin : 'https://true-reach.app'}',
+    country: 'US'
+  });
+</script>`}
+                </pre>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2">Step 3: Attach to Phone Input</h4>
+                <pre className="bg-slate-900 text-slate-100 p-4 rounded-lg overflow-x-auto text-sm">
+{`<script>
+  // Simple attachment (validates on blur)
+  PhoneValidatorWidget.attach('#patient-phone');
+
+  // With custom callback
+  PhoneValidatorWidget.attach('#patient-phone', {
+    validateOnBlur: true,
+    showInline: true,
+    onValidate: function(result, inputElement) {
+      if (!result.valid) {
+        inputElement.setCustomValidity('Invalid phone number');
+      } else {
+        inputElement.setCustomValidity('');
+      }
+    }
+  });
+</script>`}
+                </pre>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Smartphone className="text-primary" />
+                Widget API Reference
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                <h4 className="font-mono font-semibold mb-2">PhoneValidatorWidget.init(options)</h4>
+                <ul className="space-y-1 text-sm">
+                  <li><code className="bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded">apiUrl</code> - Base URL of validation API (required)</li>
+                  <li><code className="bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded">country</code> - Default country code (default: 'US')</li>
+                  <li><code className="bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded">debounceMs</code> - Debounce delay (default: 500)</li>
+                </ul>
+              </div>
+              <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                <h4 className="font-mono font-semibold mb-2">PhoneValidatorWidget.validate(phone)</h4>
+                <p className="text-sm text-muted-foreground mb-2">Returns Promise with validation result:</p>
+                <ul className="space-y-1 text-sm">
+                  <li><code className="bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded">valid</code> - boolean</li>
+                  <li><code className="bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded">phoneType</code> - 'mobile', 'fixed_line', 'voip'</li>
+                  <li><code className="bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded">canReceiveSms</code> - boolean</li>
+                  <li><code className="bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded">carrier</code> - carrier name</li>
+                </ul>
+              </div>
+              <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                <h4 className="font-mono font-semibold mb-2">PhoneValidatorWidget.attach(selector, options)</h4>
+                <ul className="space-y-1 text-sm">
+                  <li><code className="bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded">validateOnBlur</code> - Validate when field loses focus (default: true)</li>
+                  <li><code className="bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded">validateOnType</code> - Validate while typing (default: false)</li>
+                  <li><code className="bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded">showInline</code> - Show inline validation UI (default: true)</li>
+                  <li><code className="bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded">onValidate</code> - Callback function (result, element)</li>
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-orange-50 dark:bg-orange-950/20 border-orange-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AlertCircle className="text-orange-600" />
+                System-Specific Integration Notes
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <h4 className="font-semibold mb-2">Electronic Health Records (EHR):</h4>
+                <ul className="space-y-1 text-sm ml-4 list-disc">
+                  <li><strong>Epic:</strong> Add to SmartForms or custom web components</li>
+                  <li><strong>Cerner:</strong> Inject into PowerForms via CCL script</li>
+                  <li><strong>eClinicalWorks:</strong> Use custom form fields with JS validation</li>
+                  <li><strong>Allscripts:</strong> Add to TouchWorks forms via form designer</li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2">Pharmacy Management Systems:</h4>
+                <ul className="space-y-1 text-sm ml-4 list-disc">
+                  <li><strong>PioneerRx, Rx30, PrimeRx:</strong> Custom HTML/JS in patient profile forms</li>
+                  <li><strong>ScriptPro, EnterpriseRx:</strong> Web-based patient intake screens</li>
+                  <li><strong>BestRx, Liberty:</strong> Custom form fields in patient demographics</li>
+                </ul>
               </div>
             </CardContent>
           </Card>

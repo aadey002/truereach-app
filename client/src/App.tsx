@@ -1,4 +1,4 @@
-import { Switch, Route, useLocation } from "wouter";
+import { Switch, Route, useLocation, Redirect } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -7,7 +7,6 @@ import { Navigation } from "@/components/Navigation";
 import Landing from "@/pages/Landing";
 import BatchUpload from "@/pages/BatchUpload";
 import WidgetDemo from "@/pages/WidgetDemo";
-import WidgetIntegration from "@/pages/WidgetIntegration";
 import DeveloperDocs from "@/pages/DeveloperDocs";
 import Pricing from "@/pages/Pricing";
 import NotFound from "@/pages/not-found";
@@ -18,7 +17,7 @@ function Router() {
       <Route path="/" component={Landing} />
       <Route path="/batch" component={BatchUpload} />
       <Route path="/widget-demo" component={WidgetDemo} />
-      <Route path="/widget-integration" component={WidgetIntegration} />
+      <Route path="/widget-integration">{() => <Redirect to="/developer-docs" />}</Route>
       <Route path="/developer-docs" component={DeveloperDocs} />
       <Route path="/pricing" component={Pricing} />
       <Route component={NotFound} />
