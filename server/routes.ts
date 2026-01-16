@@ -457,25 +457,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ success: false, message: 'Name, email, and message are required' });
       }
 
+      // Use URLSearchParams (form-urlencoded) format which Web3Forms accepts better
+      const formData = new URLSearchParams();
+      formData.append('access_key', '2603658f-9610-45e5-8d3c-0ae67ef63013');
+      formData.append('name', name);
+      formData.append('email', email);
+      formData.append('organization', organization || 'Not provided');
+      formData.append('phone', phone || 'Not provided');
+      formData.append('message', message);
+      formData.append('subject', `TrueReach Demo Request from ${name}`);
+      formData.append('from_name', 'TrueReach');
+
       const response = await fetch('https://api.web3forms.com/submit', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded',
           'Accept': 'application/json',
         },
-        body: JSON.stringify({
-          access_key: '2603658f-9610-45e5-8d3c-0ae67ef63013',
-          name,
-          email,
-          organization: organization || 'Not provided',
-          phone: phone || 'Not provided',
-          message,
-          subject: `TrueReach Demo Request from ${name}`,
-        }),
+        body: formData.toString(),
       });
 
-      const result = await response.json();
-      res.json(result);
+      const text = await response.text();
+      try {
+        const result = JSON.parse(text);
+        res.json(result);
+      } catch {
+        console.error('Web3Forms returned non-JSON:', text.substring(0, 200));
+        res.status(500).json({ success: false, message: 'Form service unavailable. Please try again later.' });
+      }
     } catch (error) {
       console.error('Contact form error:', error);
       res.status(500).json({ success: false, message: 'Failed to send message' });
