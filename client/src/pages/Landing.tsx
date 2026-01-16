@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { FileText, Zap, Code2, CheckCircle, ArrowRight } from "lucide-react";
 import logoUrl from "@assets/image_1762494775992.png";
-import ContactForm from "@/components/ContactForm";
 
 export default function Landing() {
   return (
@@ -24,11 +23,11 @@ export default function Landing() {
         </p>
 
         <a 
-          href="#contact"
+          href="/batch"
           className="inline-block bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-2.5 px-6 md:py-3 md:px-8 rounded-full shadow-lg hover:shadow-xl transition duration-300 text-sm md:text-base"
-          data-testid="button-request-demo"
+          data-testid="button-try-now"
         >
-          Request a Free Demo
+          Try It Now
         </a>
 
         <div className="mt-6 flex flex-wrap justify-center gap-3 md:gap-6 text-xs md:text-sm text-muted-foreground">
@@ -350,7 +349,6 @@ export default function Landing() {
         </Card>
       </section>
 
-      <ContactForm />
 
       <section className="text-center py-4 md:py-8 px-2">
         <h2 className="text-2xl md:text-3xl font-bold mb-3 md:mb-4">Ready to Get Started?</h2>
