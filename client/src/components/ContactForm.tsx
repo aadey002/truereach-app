@@ -19,12 +19,16 @@ export default function ContactForm() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
         body: JSON.stringify({
           access_key: '2603658f-9610-45e5-8d3c-0ae67ef63013',
+          name: formData.name,
+          email: formData.email,
+          organization: formData.organization,
+          phone: formData.phone,
+          message: formData.message,
           subject: `TrueReach Demo Request from ${formData.name}`,
-          from_name: 'TrueReach Contact Form',
-          ...formData
         }),
       });
 
