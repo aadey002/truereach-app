@@ -158,7 +158,7 @@ export default function Home() {
     dataSheet['!cols'] = colWidths;
     XLSX.utils.book_append_sheet(workbook, dataSheet, 'Validation Results');
 
-    const fileName = `phone_validation_${new Date().toISOString().split('T')[0]}.xlsx`;
+    const fileName = `TrueReach_Validation_${new Date().toISOString().split('T')[0]}.xlsx`;
     XLSX.writeFile(workbook, fileName);
 
     toast({
