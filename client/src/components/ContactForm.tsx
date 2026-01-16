@@ -29,14 +29,17 @@ export default function ContactForm() {
       });
 
       const result = await response.json();
+      console.log('Web3Forms response:', result);
       
       if (result.success) {
         setStatus('success');
         setFormData({ name: '', email: '', organization: '', phone: '', message: '' });
       } else {
+        console.error('Web3Forms error:', result);
         setStatus('error');
       }
     } catch (error) {
+      console.error('Form submission error:', error);
       setStatus('error');
     }
   };
