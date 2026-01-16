@@ -14,7 +14,7 @@ export function Navigation() {
 
   const publicLinks = [
     { href: "/batch", label: "Batch Upload", icon: FileText },
-    { href: "/widget-demo", label: "Try It", icon: Zap },
+    { href: "/widget-demo", label: "Instant validation", icon: Zap },
     { href: "/pricing", label: "Pricing", icon: DollarSign },
   ];
 
