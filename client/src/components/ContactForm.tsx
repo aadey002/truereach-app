@@ -22,7 +22,6 @@ export default function ContactForm() {
         },
         body: JSON.stringify({
           access_key: '2603658f-9610-45e5-8d3c-0ae67ef63013',
-          to: 'aadey002@gmail.com',
           subject: `TrueReach Demo Request from ${formData.name}`,
           from_name: 'TrueReach Contact Form',
           ...formData
