@@ -4,6 +4,15 @@
 
 ## Recent Changes
 
+**January 16, 2026 - Patient Data Pass-Through**:
+- Added support for extracting patient data from CSV/Excel uploads (name, ID, email, DOB)
+- Name detection handles multiple formats: separate First/Last columns, combined "First Last", "Last, First"
+- Common FQHC/clinic column naming supported: First, Last, fname, lname, pt first, pt last, patient_name, etc.
+- ID column detection: id, patient_id, mrn, record
+- Results table shows Patient column (Name + ID) when data is present
+- Excel download now includes: Patient ID, Name, Email, Date of Birth columns
+- All patient data flows through without modification - validation only applies to phone numbers
+
 **November 13, 2025 - PHASE 2 COMPLETE**: Shared NANP Failure Detection System
 - Implemented centralized NANP validation with explicit failure codes (invalid_area_code, reserved_555_exchange, reserved_911_exchange, n11_reserved, leading_digit_violation, zero_line)
 - Refactored `getNANPValidation()` to return both boolean and failure code, ensuring perfect lockstep between validation and suggestion logic
