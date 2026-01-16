@@ -23,11 +23,13 @@ export default function Landing() {
         </p>
 
         <a 
-          href="/batch"
+          href="https://wuip8i1ezhs2.space.minimax.io"
+          target="_blank"
+          rel="noopener noreferrer"
           className="inline-block bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-2.5 px-6 md:py-3 md:px-8 rounded-full shadow-lg hover:shadow-xl transition duration-300 text-sm md:text-base"
-          data-testid="button-try-now"
+          data-testid="button-request-demo"
         >
-          Try It Now
+          Request a Free Demo
         </a>
 
         <div className="mt-6 flex flex-wrap justify-center gap-3 md:gap-6 text-xs md:text-sm text-muted-foreground">
