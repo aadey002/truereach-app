@@ -113,8 +113,9 @@ export default function Landing() {
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
                   <span>
-                    <strong>Maximize Reach:</strong> Ensure all overdue patients
-                    and care gap alerts reach the intended recipient.
+                    <strong>Downloadable Excel Report:</strong> Get a comprehensive 
+                    report with validation summary, SMS capability stats, phone type 
+                    breakdown, and smart correction suggestions.
                   </span>
                 </li>
               </ul>
@@ -211,17 +212,20 @@ export default function Landing() {
             <ul className="space-y-2 mb-6">
               <li className="flex items-start gap-2">
                 <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                <span className="text-sm">CSV & Excel support</span>
+                <span className="text-sm">CSV & Excel file support</span>
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                <span className="text-sm">Up to 10,000 numbers/month</span>
+                <span className="text-sm">Smart duplicate detection</span>
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                <span className="text-sm">Export validated results</span>
+                <span className="text-sm">Excel report with summary stats</span>
               </li>
             </ul>
+            <div className="text-xs text-muted-foreground mb-4 p-2 bg-muted/50 rounded">
+              <strong>Report includes:</strong> Validation summary, SMS stats, phone types, carrier info, patient data pass-through
+            </div>
             <Button
               className="w-full"
               variant="outline"
