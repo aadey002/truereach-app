@@ -26,6 +26,8 @@ interface DuplicateInfo {
   indices: number[];
 }
 
+const HIPAA_RETENTION_MS = 30 * 60 * 1000; // 30 minutes in milliseconds
+
 export default function Home() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isValidating, setIsValidating] = useState(false);
@@ -37,7 +39,32 @@ export default function Home() {
   const [showDuplicateChoice, setShowDuplicateChoice] = useState(false);
   const [removeDuplicates, setRemoveDuplicates] = useState(false);
   const [showDuplicateList, setShowDuplicateList] = useState(false);
+  const [sessionExpiry, setSessionExpiry] = useState<Date | null>(null);
   const { toast } = useToast();
+
+  // HIPAA compliance: Auto-clear results after 30 minutes
+  useEffect(() => {
+    if (results && results.length > 0) {
+      const expiryTime = new Date(Date.now() + HIPAA_RETENTION_MS);
+      setSessionExpiry(expiryTime);
+      
+      const timer = setTimeout(() => {
+        setResults(null);
+        setStats(null);
+        setSelectedFile(null);
+        setAllPhones([]);
+        setDuplicates([]);
+        setSessionExpiry(null);
+        toast({
+          title: "Session Expired",
+          description: "Validation results have been cleared for HIPAA compliance (30-minute retention limit).",
+          variant: "default",
+        });
+      }, HIPAA_RETENTION_MS);
+
+      return () => clearTimeout(timer);
+    }
+  }, [results]);
 
   const downloadResultsAsExcel = () => {
     if (!results) return;
