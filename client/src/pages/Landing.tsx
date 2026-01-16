@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { FileText, Zap, Code2, CheckCircle, ArrowRight, Mail } from "lucide-react";
+import { FileText, Zap, Code2, CheckCircle, ArrowRight } from "lucide-react";
 import logoUrl from "@assets/image_1762494775992.png";
 import ContactForm from "@/components/ContactForm";
 
@@ -350,22 +350,7 @@ export default function Landing() {
         </Card>
       </section>
 
-      <section id="contact" className="py-4 md:py-8 mb-4 md:mb-8">
-        <div className="max-w-2xl mx-auto">
-          <div className="text-center mb-6">
-            <div className="flex justify-center mb-4">
-              <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                <Mail className="w-6 h-6 md:w-8 md:h-8 text-primary" />
-              </div>
-            </div>
-            <h2 className="text-2xl md:text-3xl font-bold mb-2">Contact Us</h2>
-            <p className="text-base md:text-lg text-muted-foreground px-2">
-              Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
-            </p>
-          </div>
-          <ContactForm />
-        </div>
-      </section>
+      <ContactForm />
 
       <section className="text-center py-4 md:py-8 px-2">
         <h2 className="text-2xl md:text-3xl font-bold mb-3 md:mb-4">Ready to Get Started?</h2>
