@@ -10,7 +10,7 @@ export default function Landing() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-4 md:pt-8">
       <section className="text-center pb-4 md:pb-8 mb-4 md:mb-8">
         <div className="flex items-center justify-center mb-4 md:mb-6">
-          <img src={logoUrl} alt="TrueReach Logo" className="h-32 md:h-48 lg:h-64" />
+          <img src={logoUrl} alt="TrueReach Logo" className="h-48 md:h-64 lg:h-80" />
         </div>
 
         <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold text-foreground mb-6 md:mb-8 leading-tight">
