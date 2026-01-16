@@ -189,56 +189,56 @@ export default function ValidationResults({
   };
   
   return (
-    <div className="space-y-8" data-testid="validation-results">
-      <div className={`grid grid-cols-1 ${showDuplicateStats ? 'md:grid-cols-5' : 'md:grid-cols-3'} gap-6`}>
-        <Card className="p-6 border-l-4 border-l-green-500">
-          <div className="flex flex-col items-center text-center gap-3">
-            <CheckCircle className="w-12 h-12 text-green-500" />
+    <div className="space-y-4 md:space-y-8" data-testid="validation-results">
+      <div className={`grid grid-cols-3 ${showDuplicateStats ? 'md:grid-cols-5' : 'md:grid-cols-3'} gap-2 md:gap-6`}>
+        <Card className="p-2 md:p-6 border-l-2 md:border-l-4 border-l-green-500">
+          <div className="flex flex-col items-center text-center gap-1 md:gap-3">
+            <CheckCircle className="w-6 h-6 md:w-12 md:h-12 text-green-500" />
             <div>
-              <h3 className="text-4xl font-bold" data-testid="text-valid-count">{validCount}</h3>
-              <p className="text-muted-foreground mt-1">Valid Numbers</p>
+              <h3 className="text-xl md:text-4xl font-bold" data-testid="text-valid-count">{validCount}</h3>
+              <p className="text-xs md:text-base text-muted-foreground mt-0.5 md:mt-1">Valid</p>
             </div>
           </div>
         </Card>
 
-        <Card className="p-6 border-l-4 border-l-red-500">
-          <div className="flex flex-col items-center text-center gap-3">
-            <XCircle className="w-12 h-12 text-red-500" />
+        <Card className="p-2 md:p-6 border-l-2 md:border-l-4 border-l-red-500">
+          <div className="flex flex-col items-center text-center gap-1 md:gap-3">
+            <XCircle className="w-6 h-6 md:w-12 md:h-12 text-red-500" />
             <div>
-              <h3 className="text-4xl font-bold" data-testid="text-invalid-count">{invalidCount}</h3>
-              <p className="text-muted-foreground mt-1">Invalid Numbers</p>
+              <h3 className="text-xl md:text-4xl font-bold" data-testid="text-invalid-count">{invalidCount}</h3>
+              <p className="text-xs md:text-base text-muted-foreground mt-0.5 md:mt-1">Invalid</p>
             </div>
           </div>
         </Card>
 
-        <Card className="p-6 border-l-4 border-l-blue-500">
-          <div className="flex flex-col items-center text-center gap-3">
-            <Smartphone className="w-12 h-12 text-blue-500" />
+        <Card className="p-2 md:p-6 border-l-2 md:border-l-4 border-l-blue-500">
+          <div className="flex flex-col items-center text-center gap-1 md:gap-3">
+            <Smartphone className="w-6 h-6 md:w-12 md:h-12 text-blue-500" />
             <div>
-              <h3 className="text-4xl font-bold" data-testid="text-sms-count">{smsCount}</h3>
-              <p className="text-muted-foreground mt-1">Can Receive SMS</p>
+              <h3 className="text-xl md:text-4xl font-bold" data-testid="text-sms-count">{smsCount}</h3>
+              <p className="text-xs md:text-base text-muted-foreground mt-0.5 md:mt-1">SMS</p>
             </div>
           </div>
         </Card>
 
         {showDuplicateStats && (
           <>
-            <Card className="p-6 border-l-4 border-l-purple-500">
-              <div className="flex flex-col items-center text-center gap-3">
-                <CheckCircle className="w-12 h-12 text-purple-500" />
+            <Card className="p-2 md:p-6 border-l-2 md:border-l-4 border-l-purple-500">
+              <div className="flex flex-col items-center text-center gap-1 md:gap-3">
+                <CheckCircle className="w-6 h-6 md:w-12 md:h-12 text-purple-500" />
                 <div>
-                  <h3 className="text-4xl font-bold" data-testid="text-unique-count">{uniqueCount}</h3>
-                  <p className="text-muted-foreground mt-1">Unique Numbers</p>
+                  <h3 className="text-xl md:text-4xl font-bold" data-testid="text-unique-count">{uniqueCount}</h3>
+                  <p className="text-xs md:text-base text-muted-foreground mt-0.5 md:mt-1">Unique</p>
                 </div>
               </div>
             </Card>
 
-            <Card className="p-6 border-l-4 border-l-yellow-500">
-              <div className="flex flex-col items-center text-center gap-3">
-                <Copy className="w-12 h-12 text-yellow-600" />
+            <Card className="p-2 md:p-6 border-l-2 md:border-l-4 border-l-yellow-500">
+              <div className="flex flex-col items-center text-center gap-1 md:gap-3">
+                <Copy className="w-6 h-6 md:w-12 md:h-12 text-yellow-600" />
                 <div>
-                  <h3 className="text-4xl font-bold" data-testid="text-duplicate-count">{duplicateCount}</h3>
-                  <p className="text-muted-foreground mt-1">Duplicates Skipped</p>
+                  <h3 className="text-xl md:text-4xl font-bold" data-testid="text-duplicate-count">{duplicateCount}</h3>
+                  <p className="text-xs md:text-base text-muted-foreground mt-0.5 md:mt-1">Dupes</p>
                 </div>
               </div>
             </Card>
@@ -247,30 +247,28 @@ export default function ValidationResults({
       </div>
 
       {hasSuggestions && (
-        <Card className="p-6 bg-yellow-50/50 dark:bg-yellow-950/20 border-l-4 border-l-yellow-500">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-start gap-3 flex-1">
-              <Lightbulb className="w-6 h-6 text-yellow-600 mt-0.5" />
+        <Card className="p-3 md:p-6 bg-yellow-50/50 dark:bg-yellow-950/20 border-l-2 md:border-l-4 border-l-yellow-500">
+          <div className="flex flex-col md:flex-row items-start justify-between gap-3 md:gap-4">
+            <div className="flex items-start gap-2 md:gap-3 flex-1">
+              <Lightbulb className="w-5 h-5 md:w-6 md:h-6 text-yellow-600 mt-0.5 flex-shrink-0" />
               <div>
-                <h3 className="font-semibold text-lg mb-1">Issue Analysis Available</h3>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Found {resultsWithSuggestions.length} phone number{resultsWithSuggestions.length === 1 ? '' : 's'} with detected issues. 
-                  Export a CSV file with issue analysis and guidance for manual verification.
+                <h3 className="font-semibold text-base md:text-lg mb-1">Issue Analysis Available</h3>
+                <p className="text-xs md:text-sm text-muted-foreground mb-2">
+                  Found {resultsWithSuggestions.length} phone number{resultsWithSuggestions.length === 1 ? '' : 's'} with detected issues.
                 </p>
                 <div className="flex flex-col gap-2">
-                  <div className="flex items-center gap-2 text-xs text-yellow-700 dark:text-yellow-500 bg-yellow-100 dark:bg-yellow-900/30 px-3 py-1.5 rounded-md inline-flex">
-                    <AlertTriangle className="w-3 h-3" />
-                    Suggestions are for guidance only - always verify with patient
+                  <div className="flex items-center gap-2 text-xs text-yellow-700 dark:text-yellow-500 bg-yellow-100 dark:bg-yellow-900/30 px-2 md:px-3 py-1 md:py-1.5 rounded-md inline-flex">
+                    <AlertTriangle className="w-3 h-3 flex-shrink-0" />
+                    <span className="hidden sm:inline">Suggestions are for guidance only - always verify with patient</span>
+                    <span className="sm:hidden">Verify with patient</span>
                   </div>
-                  <p className="text-xs text-muted-foreground italic">
-                    Do not use suggested numbers without patient verification. Automated suggestions may be incorrect.
-                  </p>
                 </div>
               </div>
             </div>
             <Button 
               onClick={exportCorrectedNumbers}
-              className="gap-2 whitespace-nowrap"
+              className="gap-2 whitespace-nowrap w-full md:w-auto text-xs md:text-sm"
+              size="sm"
               data-testid="button-export-corrections"
             >
               <Download className="w-4 h-4" />

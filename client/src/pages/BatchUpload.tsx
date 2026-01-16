@@ -450,52 +450,52 @@ export default function Home() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto">
-      <Card className="p-8 mb-8 text-center">
-          <div className="flex flex-col items-center justify-center gap-3 mb-4">
-            <h1 className="text-4xl font-bold text-foreground">Batch Phone Validation</h1>
+    <div className="max-w-7xl mx-auto px-2 sm:px-4">
+      <Card className="p-4 md:p-8 mb-4 md:mb-8 text-center">
+          <div className="flex flex-col items-center justify-center gap-2 md:gap-3 mb-3 md:mb-4">
+            <h1 className="text-2xl md:text-4xl font-bold text-foreground">Batch Phone Validation</h1>
           </div>
-          <p className="text-muted-foreground">
+          <p className="text-sm md:text-base text-muted-foreground">
             Upload CSV or Excel files to validate phone numbers and identify SMS-capable contacts
           </p>
         </Card>
 
-        <div className="space-y-8">
+        <div className="space-y-4 md:space-y-8">
           <FileUpload 
             onFileSelect={handleFileSelect} 
             disabled={isValidating}
           />
 
           {showDuplicateChoice && !isValidating && !results && (
-            <Card className="p-6 border-yellow-500/50 bg-yellow-50/50 dark:bg-yellow-950/20" data-testid="duplicate-summary-card">
-              <div className="flex items-start gap-3 mb-4">
-                <AlertCircle className="w-6 h-6 text-yellow-600 dark:text-yellow-500 flex-shrink-0 mt-1" />
+            <Card className="p-4 md:p-6 border-yellow-500/50 bg-yellow-50/50 dark:bg-yellow-950/20" data-testid="duplicate-summary-card">
+              <div className="flex items-start gap-2 md:gap-3 mb-3 md:mb-4">
+                <AlertCircle className="w-5 h-5 md:w-6 md:h-6 text-yellow-600 dark:text-yellow-500 flex-shrink-0 mt-1" />
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-foreground mb-2">
+                  <h3 className="text-base md:text-lg font-semibold text-foreground mb-2">
                     Duplicate Numbers Detected
                   </h3>
-                  <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div className="grid grid-cols-2 gap-2 md:gap-4 mb-3 md:mb-4">
                     <div>
-                      <p className="text-sm text-muted-foreground">Total Numbers</p>
-                      <p className="text-2xl font-bold text-foreground" data-testid="text-total-numbers">
+                      <p className="text-xs md:text-sm text-muted-foreground">Total Numbers</p>
+                      <p className="text-xl md:text-2xl font-bold text-foreground" data-testid="text-total-numbers">
                         {allPhones.length}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Unique Numbers</p>
-                      <p className="text-2xl font-bold text-primary" data-testid="text-unique-numbers">
+                      <p className="text-xs md:text-sm text-muted-foreground">Unique Numbers</p>
+                      <p className="text-xl md:text-2xl font-bold text-primary" data-testid="text-unique-numbers">
                         {allPhones.length - duplicates.reduce((sum, d) => sum + (d.count - 1), 0)}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Duplicate Groups</p>
-                      <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-500" data-testid="text-duplicate-groups">
+                      <p className="text-xs md:text-sm text-muted-foreground">Duplicate Groups</p>
+                      <p className="text-xl md:text-2xl font-bold text-yellow-600 dark:text-yellow-500" data-testid="text-duplicate-groups">
                         {duplicates.length}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Total Duplicates</p>
-                      <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-500" data-testid="text-total-duplicates">
+                      <p className="text-xs md:text-sm text-muted-foreground">Total Duplicates</p>
+                      <p className="text-xl md:text-2xl font-bold text-yellow-600 dark:text-yellow-500" data-testid="text-total-duplicates">
                         {duplicates.reduce((sum, d) => sum + (d.count - 1), 0)}
                       </p>
                     </div>
@@ -535,25 +535,27 @@ export default function Home() {
                     </p>
                   </div>
 
-                  <div className="flex gap-3">
+                  <div className="flex flex-col sm:flex-row gap-2 md:gap-3">
                     <Button 
-                      size="lg" 
+                      size="default" 
                       onClick={() => handleValidation(true)}
-                      className="gap-2 flex-1"
+                      className="gap-2 flex-1 text-xs md:text-sm"
                       data-testid="button-remove-duplicates"
                     >
-                      <Activity className="w-5 h-5" />
-                      Remove Duplicates & Validate
+                      <Activity className="w-4 h-4 md:w-5 md:h-5" />
+                      <span className="hidden sm:inline">Remove Duplicates & Validate</span>
+                      <span className="sm:hidden">Remove & Validate</span>
                     </Button>
                     <Button 
-                      size="lg" 
+                      size="default" 
                       variant="outline"
                       onClick={() => handleValidation(false)}
-                      className="gap-2 flex-1"
+                      className="gap-2 flex-1 text-xs md:text-sm"
                       data-testid="button-keep-all"
                     >
-                      <Activity className="w-5 h-5" />
-                      Keep All & Validate
+                      <Activity className="w-4 h-4 md:w-5 md:h-5" />
+                      <span className="hidden sm:inline">Keep All & Validate</span>
+                      <span className="sm:hidden">Keep & Validate</span>
                     </Button>
                   </div>
                 </div>
@@ -576,8 +578,8 @@ export default function Home() {
           )}
 
           {isValidating && (
-            <div className="space-y-4" data-testid="progress-container">
-              <div className="relative w-full bg-gray-200 dark:bg-gray-700 rounded-[10px] h-[30px] overflow-hidden">
+            <div className="space-y-3 md:space-y-4" data-testid="progress-container">
+              <div className="relative w-full bg-gray-200 dark:bg-gray-700 rounded-[10px] h-[24px] md:h-[30px] overflow-hidden">
                 <div
                   className="h-full transition-all duration-300 ease-out flex items-center justify-center"
                   style={{
@@ -587,10 +589,10 @@ export default function Home() {
                   data-testid="progress-bar-fill"
                 />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 drop-shadow-sm" data-testid="progress-text">
+                  <span className="text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-200 drop-shadow-sm" data-testid="progress-text">
                     {progress.total > 0 
-                      ? `Validating: ${progress.current} of ${progress.total} numbers (${progress.percentage}%)`
-                      : 'Preparing validation...'}
+                      ? `${progress.current}/${progress.total} (${progress.percentage}%)`
+                      : 'Preparing...'}
                   </span>
                 </div>
               </div>
@@ -598,17 +600,20 @@ export default function Home() {
           )}
 
           {results && stats && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between gap-2 flex-wrap">
-                <h2 className="text-2xl font-semibold">Validation Results</h2>
-                <div className="flex gap-2">
+            <div className="space-y-4 md:space-y-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 md:gap-2">
+                <h2 className="text-xl md:text-2xl font-semibold">Validation Results</h2>
+                <div className="flex gap-2 w-full sm:w-auto">
                   <Button 
                     variant="default"
                     onClick={downloadResultsAsExcel}
                     data-testid="button-download-excel"
+                    className="flex-1 sm:flex-none text-xs md:text-sm"
+                    size="sm"
                   >
-                    <Download className="w-4 h-4 mr-2" />
-                    Download Excel
+                    <Download className="w-4 h-4 mr-1 md:mr-2" />
+                    <span className="hidden sm:inline">Download Excel</span>
+                    <span className="sm:hidden">Excel</span>
                   </Button>
                   <Button 
                     variant="outline" 
@@ -618,6 +623,8 @@ export default function Home() {
                       setSelectedFile(null);
                     }}
                     data-testid="button-new-validation"
+                    className="flex-1 sm:flex-none text-xs md:text-sm"
+                    size="sm"
                   >
                     New Validation
                   </Button>

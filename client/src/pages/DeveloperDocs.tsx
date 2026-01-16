@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Code, FileJson, Settings, Zap, Lock, CheckCircle, LogIn, Key, Code2, Smartphone, AlertCircle } from "lucide-react";
+import { Code, FileJson, Settings, Zap, Lock, CheckCircle, LogIn, Key, Code2, Smartphone, AlertCircle, FileText } from "lucide-react";
 
 export default function DeveloperDocs() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -151,34 +151,37 @@ export default function DeveloperDocs() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto py-8 px-4">
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <Code className="w-8 h-8 text-primary" />
-          <h1 className="text-3xl font-bold">Developer Documentation</h1>
+    <div className="max-w-5xl mx-auto py-4 md:py-8 px-2 sm:px-4">
+      <div className="mb-4 md:mb-8">
+        <div className="flex items-center gap-2 md:gap-3 mb-2">
+          <Code className="w-6 h-6 md:w-8 md:h-8 text-primary" />
+          <h1 className="text-2xl md:text-3xl font-bold">Developer Documentation</h1>
         </div>
-        <p className="text-muted-foreground">
+        <p className="text-sm md:text-base text-muted-foreground">
           Welcome, {user?.firstName || user?.email || 'Developer'}! Technical documentation for integrating TrueReach.
         </p>
       </div>
 
-      <Tabs defaultValue="api" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="api" data-testid="tab-api">
-            <FileJson className="w-4 h-4 mr-2" />
-            API Reference
+      <Tabs defaultValue="api" className="space-y-4 md:space-y-6">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto">
+          <TabsTrigger value="api" data-testid="tab-api" className="text-xs md:text-sm py-2">
+            <FileJson className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+            <span className="hidden sm:inline">API Reference</span>
+            <span className="sm:hidden">API</span>
           </TabsTrigger>
-          <TabsTrigger value="widget" data-testid="tab-widget">
-            <Code2 className="w-4 h-4 mr-2" />
+          <TabsTrigger value="widget" data-testid="tab-widget" className="text-xs md:text-sm py-2">
+            <Code2 className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
             Widget
           </TabsTrigger>
-          <TabsTrigger value="integration" data-testid="tab-integration">
-            <Zap className="w-4 h-4 mr-2" />
-            Integration Guide
+          <TabsTrigger value="integration" data-testid="tab-integration" className="text-xs md:text-sm py-2">
+            <Zap className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+            <span className="hidden sm:inline">Integration Guide</span>
+            <span className="sm:hidden">Guide</span>
           </TabsTrigger>
-          <TabsTrigger value="specs" data-testid="tab-specs">
-            <Settings className="w-4 h-4 mr-2" />
-            Technical Specs
+          <TabsTrigger value="specs" data-testid="tab-specs" className="text-xs md:text-sm py-2">
+            <Settings className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+            <span className="hidden sm:inline">Technical Specs</span>
+            <span className="sm:hidden">Specs</span>
           </TabsTrigger>
         </TabsList>
 
@@ -307,6 +310,78 @@ Form field: file (CSV or XLSX file)`}
                 <p className="text-sm text-muted-foreground">Match your EHR's style</p>
               </div>
             </div>
+          </Card>
+
+          <Card className="border-primary/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="text-primary" />
+                How It Works
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-muted-foreground">
+                The TrueReach Widget is a lightweight JavaScript library that adds real-time phone validation 
+                to any web-based healthcare system. When a staff member enters a phone number, the widget 
+                instantly validates it against our NANP-compliant database and the Veriphone carrier network.
+              </p>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                  <h4 className="font-semibold mb-2">What You Get</h4>
+                  <ul className="space-y-1 text-sm text-muted-foreground">
+                    <li>• Instant valid/invalid feedback</li>
+                    <li>• Phone type detection (mobile, landline, VoIP)</li>
+                    <li>• SMS capability check</li>
+                    <li>• Carrier identification</li>
+                    <li>• Smart correction suggestions</li>
+                  </ul>
+                </div>
+                <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                  <h4 className="font-semibold mb-2">Integration Process</h4>
+                  <ul className="space-y-1 text-sm text-muted-foreground">
+                    <li>1. Add our script tag to your page</li>
+                    <li>2. Initialize with your API credentials</li>
+                    <li>3. Attach to phone input fields</li>
+                    <li>4. Validation happens automatically</li>
+                  </ul>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-primary/5 border-primary/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Key className="text-primary" />
+                How to Get Access
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-muted-foreground">
+                Widget access is available to healthcare organizations with an active TrueReach subscription. 
+                To get started:
+              </p>
+              <ol className="space-y-3 text-sm">
+                <li className="flex items-start gap-3">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">1</span>
+                  <span><strong>Contact our team</strong> — Email <a href="mailto:support@true-reach.app" className="text-primary hover:underline">support@true-reach.app</a> with your organization name and EHR/pharmacy system.</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">2</span>
+                  <span><strong>Receive API credentials</strong> — We'll provision your unique API key and widget access.</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">3</span>
+                  <span><strong>Implementation support</strong> — Our team can assist with integration into your specific system.</span>
+                </li>
+              </ol>
+              <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
+                <p className="text-sm text-amber-800 dark:text-amber-200">
+                  <strong>Note:</strong> Widget integration requires technical access to add JavaScript to your EHR/pharmacy system. 
+                  Some systems may require IT department involvement.
+                </p>
+              </div>
+            </CardContent>
           </Card>
 
           <Card>

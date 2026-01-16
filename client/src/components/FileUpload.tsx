@@ -55,14 +55,14 @@ export default function FileUpload({ onFileSelect, disabled }: FileUploadProps) 
   };
 
   return (
-    <Card className="p-8">
+    <Card className="p-4 md:p-8">
       <div
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onClick={handleClick}
         className={`
-          border-4 border-dashed rounded-xl p-12 text-center transition-all cursor-pointer
+          border-2 md:border-4 border-dashed rounded-lg md:rounded-xl p-6 md:p-12 text-center transition-all cursor-pointer
           ${isDragging ? 'border-primary bg-primary/5 scale-[1.02]' : 'border-border hover-elevate'}
           ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
         `}
@@ -78,23 +78,23 @@ export default function FileUpload({ onFileSelect, disabled }: FileUploadProps) 
           data-testid="input-file"
         />
         
-        <div className="flex flex-col items-center gap-4">
-          <div className={`p-6 rounded-full ${selectedFile ? 'bg-primary/10' : 'bg-muted'} transition-colors`}>
+        <div className="flex flex-col items-center gap-3 md:gap-4">
+          <div className={`p-4 md:p-6 rounded-full ${selectedFile ? 'bg-primary/10' : 'bg-muted'} transition-colors`}>
             {selectedFile ? (
-              <FileSpreadsheet className="w-16 h-16 text-primary" />
+              <FileSpreadsheet className="w-10 h-10 md:w-16 md:h-16 text-primary" />
             ) : (
-              <Upload className="w-16 h-16 text-muted-foreground" />
+              <Upload className="w-10 h-10 md:w-16 md:h-16 text-muted-foreground" />
             )}
           </div>
           
-          <div className="space-y-2">
-            <h3 className="text-xl font-semibold">
+          <div className="space-y-1 md:space-y-2">
+            <h3 className="text-base md:text-xl font-semibold break-all px-2">
               {selectedFile ? selectedFile.name : 'Click to Upload CSV or Excel File'}
             </h3>
-            <p className="text-muted-foreground">
+            <p className="text-sm md:text-base text-muted-foreground hidden sm:block">
               {selectedFile ? 'File ready for validation' : 'or drag and drop your file here'}
             </p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs md:text-sm text-muted-foreground">
               Supported: .csv, .xlsx, .xls
             </p>
           </div>
@@ -102,9 +102,10 @@ export default function FileUpload({ onFileSelect, disabled }: FileUploadProps) 
       </div>
 
       {selectedFile && (
-        <div className="mt-6 flex justify-center">
+        <div className="mt-4 md:mt-6 flex justify-center">
           <Button
             variant="outline"
+            size="sm"
             onClick={(e) => {
               e.stopPropagation();
               setSelectedFile(null);
