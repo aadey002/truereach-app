@@ -312,57 +312,6 @@ Form field: file (CSV or XLSX file)`}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <CheckCircle className="text-green-600" />
-                Quick Start Guide
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <h4 className="font-semibold mb-2">Step 1: Include the Widget Script</h4>
-                <p className="text-muted-foreground mb-2">Add this to your HTML page or EHR form template:</p>
-                <pre className="bg-slate-900 text-slate-100 p-4 rounded-lg overflow-x-auto text-sm">
-{`<script src="${typeof window !== 'undefined' ? window.location.origin : 'https://true-reach.app'}/phone-validator-widget.js"></script>`}
-                </pre>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2">Step 2: Initialize the Widget</h4>
-                <pre className="bg-slate-900 text-slate-100 p-4 rounded-lg overflow-x-auto text-sm">
-{`<script>
-  PhoneValidatorWidget.init({
-    apiUrl: '${typeof window !== 'undefined' ? window.location.origin : 'https://true-reach.app'}',
-    country: 'US'
-  });
-</script>`}
-                </pre>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2">Step 3: Attach to Phone Input</h4>
-                <pre className="bg-slate-900 text-slate-100 p-4 rounded-lg overflow-x-auto text-sm">
-{`<script>
-  // Simple attachment (validates on blur)
-  PhoneValidatorWidget.attach('#patient-phone');
-
-  // With custom callback
-  PhoneValidatorWidget.attach('#patient-phone', {
-    validateOnBlur: true,
-    showInline: true,
-    onValidate: function(result, inputElement) {
-      if (!result.valid) {
-        inputElement.setCustomValidity('Invalid phone number');
-      } else {
-        inputElement.setCustomValidity('');
-      }
-    }
-  });
-</script>`}
-                </pre>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
                 <Smartphone className="text-primary" />
                 Widget API Reference
               </CardTitle>
