@@ -126,9 +126,15 @@ export default function Pricing() {
           <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
             We offer enterprise plans for large healthcare systems with custom requirements. Contact our sales team for a personalized quote.
           </p>
-          <Button size="lg" variant="outline" data-testid="button-contact-sales">
-            Contact Sales
-          </Button>
+          <a 
+            href="https://wuip8i1ezhs2.space.minimax.io"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Button size="lg" variant="outline" data-testid="button-contact-sales">
+              Contact Sales
+            </Button>
+          </a>
         </Card>
 
         <div className="mt-12 grid md:grid-cols-3 gap-6">
