@@ -35,6 +35,12 @@ export interface PhoneValidationResult {
   carrier: string;
   is_duplicate?: boolean;
   suggestions?: PhoneSuggestion[];
+  name?: string;
+  firstName?: string;
+  lastName?: string;
+  patientId?: string;
+  email?: string;
+  dob?: string;
 }
 
 export interface ValidationResultsProps {
@@ -279,6 +285,9 @@ export default function ValidationResults({
           <Table>
             <TableHeader>
               <TableRow className="bg-primary hover:bg-primary">
+                {results.some(r => r.patientId || r.name) && (
+                  <TableHead className="text-primary-foreground font-semibold">Patient</TableHead>
+                )}
                 <TableHead className="text-primary-foreground font-semibold">Phone Number</TableHead>
                 <TableHead className="text-primary-foreground font-semibold">Status</TableHead>
                 <TableHead className="text-primary-foreground font-semibold">Type</TableHead>
@@ -297,6 +306,15 @@ export default function ValidationResults({
                   data-testid={`row-result-${index}`}
                   className={result.is_duplicate ? 'bg-yellow-50/50 dark:bg-yellow-950/20' : ''}
                 >
+                  {results.some(r => r.patientId || r.name) && (
+                    <TableCell>
+                      <div className="flex flex-col">
+                        {result.name && <span className="font-medium">{result.name}</span>}
+                        {result.patientId && <span className="text-xs text-muted-foreground">ID: {result.patientId}</span>}
+                        {!result.name && !result.patientId && <span className="text-muted-foreground">—</span>}
+                      </div>
+                    </TableCell>
+                  )}
                   <TableCell className="font-medium">{result.phone}</TableCell>
                   <TableCell>
                     {result.is_duplicate ? (

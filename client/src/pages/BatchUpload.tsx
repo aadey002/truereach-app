@@ -43,6 +43,10 @@ export default function Home() {
     if (!results) return;
 
     const excelData = results.map(r => ({
+      'Patient ID': r.patientId || '',
+      'Name': r.name || '',
+      'Email': r.email || '',
+      'Date of Birth': r.dob || '',
       'Phone Number': r.phone,
       'Status': r.valid ? 'Valid' : 'Invalid',
       'Phone Type': r.phone_type || 'Unknown',
@@ -63,13 +67,17 @@ export default function Home() {
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Validation Results');
 
     const colWidths = [
-      { wch: 20 },
-      { wch: 10 },
-      { wch: 12 },
-      { wch: 15 },
-      { wch: 25 },
-      { wch: 12 },
-      { wch: 40 }
+      { wch: 15 },  // Patient ID
+      { wch: 25 },  // Name
+      { wch: 25 },  // Email
+      { wch: 12 },  // Date of Birth
+      { wch: 18 },  // Phone Number
+      { wch: 10 },  // Status
+      { wch: 12 },  // Phone Type
+      { wch: 15 },  // Can Receive SMS
+      { wch: 20 },  // Carrier
+      { wch: 12 },  // Is Duplicate
+      { wch: 40 }   // Suggested Fix
     ];
     worksheet['!cols'] = colWidths;
 

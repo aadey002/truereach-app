@@ -123,53 +123,104 @@ async function validatePhoneNumber(phone: string, apiKey: string): Promise<{
   }
 }
 
-function parsePhoneNumbers(fileBuffer: Buffer, filename: string): string[] {
-  const phones: string[] = [];
+interface PatientData {
+  phone: string;
+  name?: string;
+  firstName?: string;
+  lastName?: string;
+  id?: string;
+  email?: string;
+  dob?: string;
+}
+
+function findColumn(keys: string[], patterns: string[]): string | undefined {
+  return keys.find(key => {
+    const lower = key.toLowerCase();
+    return patterns.some(p => lower.includes(p));
+  });
+}
+
+function extractName(row: Record<string, any>, keys: string[]): { name?: string; firstName?: string; lastName?: string } {
+  // Check for separate first/last name columns (common FQHC/clinic variations)
+  const firstNameCol = findColumn(keys, ['first_name', 'firstname', 'first name', 'fname', 'first', 'pt first', 'patient first']);
+  const lastNameCol = findColumn(keys, ['last_name', 'lastname', 'last name', 'lname', 'last', 'pt last', 'patient last']);
+  
+  if (firstNameCol && lastNameCol) {
+    const firstName = row[firstNameCol] ? String(row[firstNameCol]).trim() : undefined;
+    const lastName = row[lastNameCol] ? String(row[lastNameCol]).trim() : undefined;
+    return { firstName, lastName, name: firstName && lastName ? `${firstName} ${lastName}` : firstName || lastName };
+  }
+  
+  // Check for combined name column
+  const nameCol = findColumn(keys, ['name', 'patient_name', 'patient name', 'full_name', 'fullname']);
+  if (nameCol && row[nameCol]) {
+    const fullName = String(row[nameCol]).trim();
+    // Check if format is "Last, First"
+    if (fullName.includes(',')) {
+      const parts = fullName.split(',').map(s => s.trim());
+      return { name: `${parts[1]} ${parts[0]}`, firstName: parts[1], lastName: parts[0] };
+    }
+    // Assume "First Last" format
+    const parts = fullName.split(/\s+/);
+    if (parts.length >= 2) {
+      return { name: fullName, firstName: parts[0], lastName: parts.slice(1).join(' ') };
+    }
+    return { name: fullName, firstName: fullName };
+  }
+  
+  return {};
+}
+
+function parsePatientData(fileBuffer: Buffer, filename: string): PatientData[] {
+  const patients: PatientData[] = [];
 
   try {
+    let data: Record<string, any>[] = [];
+    
     if (filename.endsWith('.csv')) {
       const text = fileBuffer.toString('utf-8');
       const parsed = Papa.parse(text, { header: true });
-      
-      if (parsed.data && parsed.data.length > 0) {
-        const firstRow = parsed.data[0] as Record<string, any>;
-        const phoneColumn = Object.keys(firstRow).find(key => 
-          key.toLowerCase().includes('phone')
-        ) || Object.keys(firstRow)[0];
-
-        parsed.data.forEach((row: any) => {
-          const phoneValue = row[phoneColumn];
-          if (phoneValue && String(phoneValue).trim() && String(phoneValue).toLowerCase() !== 'nan') {
-            phones.push(String(phoneValue).trim());
-          }
-        });
-      }
+      data = parsed.data as Record<string, any>[];
     } else if (filename.endsWith('.xlsx') || filename.endsWith('.xls')) {
       const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
       const firstSheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[firstSheetName];
-      const data = XLSX.utils.sheet_to_json(worksheet);
+      data = XLSX.utils.sheet_to_json(worksheet) as Record<string, any>[];
+    }
 
-      if (data && data.length > 0) {
-        const firstRow = data[0] as Record<string, any>;
-        const phoneColumn = Object.keys(firstRow).find(key => 
-          key.toLowerCase().includes('phone')
-        ) || Object.keys(firstRow)[0];
+    if (data && data.length > 0) {
+      const firstRow = data[0];
+      const keys = Object.keys(firstRow);
+      
+      // Find phone column
+      const phoneCol = findColumn(keys, ['phone', 'mobile', 'cell', 'telephone', 'tel']) || keys[0];
+      
+      // Find other columns
+      const idCol = findColumn(keys, ['id', 'patient_id', 'patientid', 'patient id', 'mrn', 'record']);
+      const emailCol = findColumn(keys, ['email', 'e-mail', 'mail']);
+      const dobCol = findColumn(keys, ['dob', 'date_of_birth', 'dateofbirth', 'birth', 'birthday', 'birthdate']);
 
-        data.forEach((row: any) => {
-          const phoneValue = row[phoneColumn];
-          if (phoneValue && String(phoneValue).trim() && String(phoneValue).toLowerCase() !== 'nan') {
-            phones.push(String(phoneValue).trim());
-          }
-        });
-      }
+      data.forEach((row: Record<string, any>) => {
+        const phoneValue = row[phoneCol];
+        if (phoneValue && String(phoneValue).trim() && String(phoneValue).toLowerCase() !== 'nan') {
+          const nameData = extractName(row, keys);
+          
+          patients.push({
+            phone: String(phoneValue).trim(),
+            ...nameData,
+            id: idCol && row[idCol] ? String(row[idCol]).trim() : undefined,
+            email: emailCol && row[emailCol] ? String(row[emailCol]).trim() : undefined,
+            dob: dobCol && row[dobCol] ? String(row[dobCol]).trim() : undefined,
+          });
+        }
+      });
     }
   } catch (error) {
     console.error('Error parsing file:', error);
     throw new Error('Failed to parse file');
   }
 
-  return phones;
+  return patients;
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -349,21 +400,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ error: 'API key not configured' });
       }
 
-      const phones = parsePhoneNumbers(req.file.buffer, req.file.originalname);
+      const patients = parsePatientData(req.file.buffer, req.file.originalname);
 
-      if (phones.length === 0) {
+      if (patients.length === 0) {
         return res.status(400).json({ error: 'No phone numbers found in file' });
       }
 
       const results = [];
 
-      for (let i = 0; i < phones.length; i++) {
-        const phone = phones[i];
-        const result = await validatePhoneNumber(phone, apiKey);
-        results.push(result);
+      for (let i = 0; i < patients.length; i++) {
+        const patient = patients[i];
+        const validationResult = await validatePhoneNumber(patient.phone, apiKey);
+        
+        // Merge patient data with validation result
+        results.push({
+          ...validationResult,
+          name: patient.name,
+          firstName: patient.firstName,
+          lastName: patient.lastName,
+          patientId: patient.id,
+          email: patient.email,
+          dob: patient.dob
+        });
         
         // Rate limiting - wait 300ms between requests
-        if (i < phones.length - 1) {
+        if (i < patients.length - 1) {
           await new Promise(resolve => setTimeout(resolve, 300));
         }
       }
@@ -378,10 +439,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         sms_count: smsCount
       };
 
-      // Validate response with Zod schema
-      const validated = validationResponseSchema.parse(response);
-
-      res.json(validated);
+      res.json(response);
     } catch (error) {
       console.error('Validation error:', error);
       res.status(500).json({ 
