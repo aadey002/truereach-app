@@ -67,8 +67,60 @@ export default function Home() {
   }, [results]);
 
   const downloadResultsAsExcel = () => {
-    if (!results) return;
+    if (!results || !stats) return;
 
+    const workbook = XLSX.utils.book_new();
+
+    // Calculate additional stats for summary
+    const mobileCount = results.filter(r => r.valid && r.phone_type === 'mobile').length;
+    const landlineCount = results.filter(r => r.valid && r.phone_type === 'fixed_line').length;
+    const voipCount = results.filter(r => r.valid && (r.phone_type === 'voip' || r.phone_type === 'unknown')).length;
+    const duplicateCount = results.filter(r => r.is_duplicate).length;
+    const hasPatientData = results.some(r => r.name || r.patientId);
+    const validationDate = new Date().toLocaleString();
+
+    // Create Summary Sheet
+    const totalNumbers = stats.valid + stats.invalid;
+    const summaryData = [
+      ['TRUEREACH VALIDATION REPORT'],
+      [''],
+      ['Report Generated:', validationDate],
+      [''],
+      ['VALIDATION SUMMARY'],
+      [''],
+      ['Total Phone Numbers:', totalNumbers],
+      ['Valid Numbers:', stats.valid],
+      ['Invalid Numbers:', stats.invalid],
+      ['Validation Rate:', `${totalNumbers > 0 ? Math.round((stats.valid / totalNumbers) * 100) : 0}%`],
+      [''],
+      ['SMS CAPABILITY'],
+      [''],
+      ['SMS-Capable (Textable):', stats.sms],
+      ['Non-SMS (Voice Only):', stats.valid - stats.sms],
+      ['SMS Rate:', `${stats.valid > 0 ? Math.round((stats.sms / stats.valid) * 100) : 0}%`],
+      [''],
+      ['PHONE TYPE BREAKDOWN'],
+      [''],
+      ['Mobile Phones:', mobileCount],
+      ['Landlines:', landlineCount],
+      ['VoIP/Other:', voipCount],
+      [''],
+      ['DATA QUALITY'],
+      [''],
+      ['Duplicate Numbers Found:', duplicateCount],
+      ['Patient Data Included:', hasPatientData ? 'Yes' : 'No'],
+      [''],
+      [''],
+      ['HIPAA NOTICE: This report contains patient contact information.'],
+      ['Handle according to your organization\'s privacy policies.'],
+      ['Data auto-expires in browser after 30 minutes.']
+    ];
+
+    const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+    summarySheet['!cols'] = [{ wch: 30 }, { wch: 20 }];
+    XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary');
+
+    // Create Data Sheet
     const excelData = results.map(r => ({
       'Patient ID': r.patientId || '',
       'Name': r.name || '',
@@ -89,10 +141,7 @@ export default function Home() {
         : ''
     }));
 
-    const worksheet = XLSX.utils.json_to_sheet(excelData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Validation Results');
-
+    const dataSheet = XLSX.utils.json_to_sheet(excelData);
     const colWidths = [
       { wch: 15 },  // Patient ID
       { wch: 25 },  // Name
@@ -106,7 +155,8 @@ export default function Home() {
       { wch: 12 },  // Is Duplicate
       { wch: 40 }   // Suggested Fix
     ];
-    worksheet['!cols'] = colWidths;
+    dataSheet['!cols'] = colWidths;
+    XLSX.utils.book_append_sheet(workbook, dataSheet, 'Validation Results');
 
     const fileName = `phone_validation_${new Date().toISOString().split('T')[0]}.xlsx`;
     XLSX.writeFile(workbook, fileName);
