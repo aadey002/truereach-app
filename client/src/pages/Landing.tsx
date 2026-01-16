@@ -141,7 +141,7 @@ export default function Landing() {
             The FQHC Value Proposition: The Power of Valid Data
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
             <div className="p-6">
               <h3 className="text-xl font-semibold text-foreground mb-3">
                 Boost Revenue Cycle
@@ -172,6 +172,17 @@ export default function Landing() {
                 Free your staff from the endless cycle of "phone tag."
                 Automation lets your team focus on patient support, not manual
                 data verification.
+              </p>
+            </div>
+
+            <div className="p-6">
+              <h3 className="text-xl font-semibold text-foreground mb-3">
+                HIPAA-Safe by Design
+              </h3>
+              <p className="text-muted-foreground">
+                Patient data is <strong>never stored</strong> on our servers. 
+                Results auto-expire after 30 minutes for complete{" "}
+                <strong>HIPAA compliance</strong> and peace of mind.
               </p>
             </div>
           </div>
