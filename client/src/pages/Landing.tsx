@@ -7,13 +7,13 @@ import ContactForm from "@/components/ContactForm";
 
 export default function Landing() {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-0 -mt-40 md:-mt-60 lg:-mt-80">
-      <section className="text-center pt-0 pb-4 md:pb-8 mb-4 md:mb-8">
-        <div className="flex items-center justify-center -mb-[140px] md:-mb-[200px] lg:-mb-[280px] gap-0">
-          <img src={logoUrl} alt="TrueReach Logo" className="h-48 md:h-72 lg:h-90 -mr-4" />
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-4 md:pt-8">
+      <section className="text-center pb-4 md:pb-8 mb-4 md:mb-8">
+        <div className="flex items-center justify-center mb-4 md:mb-6">
+          <img src={logoUrl} alt="TrueReach Logo" className="h-32 md:h-48 lg:h-64" />
         </div>
 
-        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold text-foreground mb-8 md:mb-12 lg:mb-20 mt-0 pt-0 leading-tight">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold text-foreground mb-6 md:mb-8 leading-tight">
           Stop Missed Appointments. Start True Patient Engagement.
         </h1>
 
