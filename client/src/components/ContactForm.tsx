@@ -15,20 +15,17 @@ export default function ContactForm() {
     setStatus('submitting');
 
     try {
-      const response = await fetch('https://api.web3forms.com/submit', {
+      const response = await fetch('/api/contact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
         },
         body: JSON.stringify({
-          access_key: '2603658f-9610-45e5-8d3c-0ae67ef63013',
           name: formData.name,
           email: formData.email,
           organization: formData.organization,
           phone: formData.phone,
           message: formData.message,
-          subject: `TrueReach Demo Request from ${formData.name}`,
         }),
       });
 

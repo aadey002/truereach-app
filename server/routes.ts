@@ -448,6 +448,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Contact form endpoint - proxies to Web3Forms to avoid domain blocking
+  app.post('/api/contact', async (req, res) => {
+    try {
+      const { name, email, organization, phone, message } = req.body;
+      
+      if (!name || !email || !message) {
+        return res.status(400).json({ success: false, message: 'Name, email, and message are required' });
+      }
+
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          access_key: '2603658f-9610-45e5-8d3c-0ae67ef63013',
+          name,
+          email,
+          organization: organization || 'Not provided',
+          phone: phone || 'Not provided',
+          message,
+          subject: `TrueReach Demo Request from ${name}`,
+        }),
+      });
+
+      const result = await response.json();
+      res.json(result);
+    } catch (error) {
+      console.error('Contact form error:', error);
+      res.status(500).json({ success: false, message: 'Failed to send message' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
