@@ -10,11 +10,16 @@ const app = express();
 const isProduction = app.get("env") === "production";
 
 app.use(helmet({
-  contentSecurityPolicy: isProduction ? undefined : false,
+  contentSecurityPolicy: false,
   crossOriginEmbedderPolicy: false
 }));
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:5000', 'http://localhost:3000'];
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
+  'http://localhost:5000',
+  'http://localhost:3000',
+  'https://true-reach.app',
+  'https://www.true-reach.app'
+];
 
 const PUBLIC_CORS_PATHS = ['/api/validate-realtime'];
 
