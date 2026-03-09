@@ -5,15 +5,20 @@
 ## Recent Changes
 
 **March 9, 2026 - Enterprise Security & Performance Upgrade**:
-- Added Helmet.js for security headers (XSS protection, CSP, frame options)
+- Added Helmet.js for security headers (XSS protection, frame options, HSTS, etc.) — CSP disabled to allow Vite inline scripts
 - Added CORS configuration with configurable origin whitelist (public endpoints exempt for widget)
-- Added gzip/brotli compression via compression middleware
+- Added gzip/brotli compression via compression middleware (60% size reduction measured)
 - Added rate limiting: API endpoints (100 req/15min), batch uploads & contact form (10 req/min)
+  - Uses PostgreSQL-backed `RateLimiterPostgres` for cross-instance consistency in production
+  - Falls back to `RateLimiterMemory` when no DATABASE_URL is set
+  - Custom `getClientIp()` helper extracts real client IP from X-Forwarded-For header (first hop), required because Replit's Google Frontend proxy rotates `req.ip` per request
+  - Returns 429 with `Retry-After` header when rate limit exceeded
+- Express configured with `trust proxy: 1` for correct IP detection behind reverse proxy
 - Added Morgan request logging (combined format in production, dev format in development)
 - Added health check endpoint at `/health` for load balancers
-- Improved error handling: no stack traces in production, structured JSON error logging
+- Improved error handling: no stack traces in production, structured JSON error logging, CORS denials return 403
 - Added request body size limits (10MB)
-- New dependencies: helmet, cors, compression, morgan, rate-limiter-flexible
+- New dependencies: helmet, cors, compression, morgan, rate-limiter-flexible, pg
 
 **January 16, 2026 - Patient Data Pass-Through**:
 - Added support for extracting patient data from CSV/Excel uploads (name, ID, email, DOB)
