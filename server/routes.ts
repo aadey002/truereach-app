@@ -43,6 +43,15 @@ if (process.env.DATABASE_URL) {
   });
 }
 
+function getClientIp(req: any): string {
+  const xff = req.headers['x-forwarded-for'];
+  if (xff) {
+    const firstIp = (typeof xff === 'string' ? xff : xff[0]).split(',')[0].trim();
+    if (firstIp) return firstIp;
+  }
+  return req.ip || req.socket?.remoteAddress || 'unknown';
+}
+
 // PayPal integration - conditionally import based on environment variables
 let paypalModule: any = null;
 const paypalEnabled = !!(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET);
@@ -321,7 +330,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Real-time validation endpoint for single phone numbers
   app.post('/api/validate-realtime', async (req, res) => {
     try {
-      await apiLimiter.consume(req.ip || 'unknown');
+      await apiLimiter.consume(getClientIp(req));
 
       const { phone, country = 'US' } = req.body;
 
@@ -433,7 +442,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/validate', upload.single('file'), async (req, res) => {
     try {
-      await strictLimiter.consume(req.ip || 'unknown');
+      await strictLimiter.consume(getClientIp(req));
 
       if (!req.file) {
         return res.status(400).json({ error: 'No file uploaded' });
@@ -499,7 +508,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Contact form endpoint - proxies to Web3Forms to avoid domain blocking
   app.post('/api/contact', async (req, res) => {
     try {
-      await strictLimiter.consume(req.ip || 'unknown');
+      await strictLimiter.consume(getClientIp(req));
 
       const { name, email, organization, phone, message } = req.body;
       
