@@ -3,20 +3,45 @@ import { createServer, type Server } from "http";
 import multer from "multer";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
-import { RateLimiterMemory } from "rate-limiter-flexible";
+import { RateLimiterPostgres, RateLimiterMemory } from "rate-limiter-flexible";
+import pg from "pg";
 import { validationResponseSchema } from "@shared/schema";
 import { analyzeInvalidPhone, isValidNANPFormat, getNANPSuggestion, type PhoneSuggestion } from "./phoneAnalyzer";
 import { setupAuth, registerAuthRoutes } from "./replit_integrations/auth";
 
-const apiLimiter = new RateLimiterMemory({
-  points: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'),
-  duration: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000') / 1000,
-});
+let apiLimiter: RateLimiterPostgres | RateLimiterMemory;
+let strictLimiter: RateLimiterPostgres | RateLimiterMemory;
 
-const strictLimiter = new RateLimiterMemory({
-  points: 10,
-  duration: 60,
-});
+if (process.env.DATABASE_URL) {
+  const rateLimitPool = new pg.Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
+
+  const apiLimiterReady = new RateLimiterPostgres({
+    storeClient: rateLimitPool,
+    tableName: 'rate_limit_api',
+    points: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'),
+    duration: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000') / 1000,
+  });
+
+  const strictLimiterReady = new RateLimiterPostgres({
+    storeClient: rateLimitPool,
+    tableName: 'rate_limit_strict',
+    points: 10,
+    duration: 60,
+  });
+
+  apiLimiter = apiLimiterReady;
+  strictLimiter = strictLimiterReady;
+} else {
+  apiLimiter = new RateLimiterMemory({
+    points: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'),
+    duration: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000') / 1000,
+  });
+
+  strictLimiter = new RateLimiterMemory({
+    points: 10,
+    duration: 60,
+  });
+}
 
 // PayPal integration - conditionally import based on environment variables
 let paypalModule: any = null;
