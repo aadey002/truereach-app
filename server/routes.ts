@@ -42,7 +42,7 @@ if (process.env.DATABASE_URL) {
     duration: 60,
   });
 }
-
+// CRITICAL: Fix for getting client IP behind proxies (rateLimiter Flexible needs this)
 function getClientIp(req: any): string {
   const xff = req.headers['x-forwarded-for'];
   if (xff) {
