@@ -314,6 +314,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   }
 
+  app.get('/api/debug-ip', (req, res) => {
+    const xff = req.headers['x-forwarded-for'];
+    const clientIp = getClientIp(req);
+    res.json({
+      'req.ip': req.ip,
+      'req.socket.remoteAddress': req.socket?.remoteAddress,
+      'x-forwarded-for': xff,
+      'getClientIp': clientIp,
+      'trust_proxy': req.app.get('trust proxy'),
+    });
+  });
+
+  app.post('/api/rate-limit-test', async (req, res) => {
+    const clientIp = getClientIp(req);
+    try {
+      const result = await strictLimiter.consume(clientIp);
+      res.json({
+        limited: false,
+        clientIp,
+        remainingPoints: result.remainingPoints,
+        consumedPoints: result.consumedPoints,
+        msBeforeNext: result.msBeforeNext,
+      });
+    } catch (error: any) {
+      if (error?.msBeforeNext !== undefined) {
+        res.set('Retry-After', String(Math.ceil(error.msBeforeNext / 1000)));
+        res.status(429).json({
+          limited: true,
+          clientIp,
+          msBeforeNext: error.msBeforeNext,
+          remainingPoints: error.remainingPoints,
+          consumedPoints: error.consumedPoints,
+        });
+      } else {
+        res.status(500).json({
+          error: 'Rate limiter error',
+          clientIp,
+          errorType: error?.constructor?.name,
+          errorMessage: error?.message || String(error),
+        });
+      }
+    }
+  });
+
   // Enable CORS for widget integration
   app.use('/api/validate-realtime', (req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
