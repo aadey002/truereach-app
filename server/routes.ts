@@ -3,9 +3,20 @@ import { createServer, type Server } from "http";
 import multer from "multer";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
+import { RateLimiterMemory } from "rate-limiter-flexible";
 import { validationResponseSchema } from "@shared/schema";
 import { analyzeInvalidPhone, isValidNANPFormat, getNANPSuggestion, type PhoneSuggestion } from "./phoneAnalyzer";
 import { setupAuth, registerAuthRoutes } from "./replit_integrations/auth";
+
+const apiLimiter = new RateLimiterMemory({
+  points: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'),
+  duration: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000') / 1000,
+});
+
+const strictLimiter = new RateLimiterMemory({
+  points: 10,
+  duration: 60,
+});
 
 // PayPal integration - conditionally import based on environment variables
 let paypalModule: any = null;
@@ -285,6 +296,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Real-time validation endpoint for single phone numbers
   app.post('/api/validate-realtime', async (req, res) => {
     try {
+      await apiLimiter.consume(req.ip || 'unknown');
+
       const { phone, country = 'US' } = req.body;
 
       if (!phone) {
@@ -380,7 +393,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       res.json(result);
-    } catch (error) {
+    } catch (error: any) {
+      if (error?.msBeforeNext !== undefined) {
+        res.set('Retry-After', String(Math.ceil(error.msBeforeNext / 1000)));
+        return res.status(429).json({ error: 'Too many requests', valid: false });
+      }
       console.error('Real-time validation error:', error);
       res.status(500).json({ 
         error: error instanceof Error ? error.message : 'Validation failed',
@@ -391,6 +408,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/validate', upload.single('file'), async (req, res) => {
     try {
+      await strictLimiter.consume(req.ip || 'unknown');
+
       if (!req.file) {
         return res.status(400).json({ error: 'No file uploaded' });
       }
@@ -440,7 +459,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       res.json(response);
-    } catch (error) {
+    } catch (error: any) {
+      if (error?.msBeforeNext !== undefined) {
+        res.set('Retry-After', String(Math.ceil(error.msBeforeNext / 1000)));
+        return res.status(429).json({ error: 'Too many requests. Please wait before uploading again.' });
+      }
       console.error('Validation error:', error);
       res.status(500).json({ 
         error: error instanceof Error ? error.message : 'An error occurred during validation' 
@@ -451,6 +474,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Contact form endpoint - proxies to Web3Forms to avoid domain blocking
   app.post('/api/contact', async (req, res) => {
     try {
+      await strictLimiter.consume(req.ip || 'unknown');
+
       const { name, email, organization, phone, message } = req.body;
       
       if (!name || !email || !message) {
@@ -485,7 +510,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error('Web3Forms returned non-JSON:', text.substring(0, 200));
         res.status(500).json({ success: false, message: 'Form service unavailable. Please try again later.' });
       }
-    } catch (error) {
+    } catch (error: any) {
+      if (error?.msBeforeNext !== undefined) {
+        res.set('Retry-After', String(Math.ceil(error.msBeforeNext / 1000)));
+        return res.status(429).json({ success: false, message: 'Too many requests. Please wait before submitting again.' });
+      }
       console.error('Contact form error:', error);
       res.status(500).json({ success: false, message: 'Failed to send message' });
     }

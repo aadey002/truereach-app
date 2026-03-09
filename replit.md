@@ -4,6 +4,17 @@
 
 ## Recent Changes
 
+**March 9, 2026 - Enterprise Security & Performance Upgrade**:
+- Added Helmet.js for security headers (XSS protection, CSP, frame options)
+- Added CORS configuration with configurable origin whitelist (public endpoints exempt for widget)
+- Added gzip/brotli compression via compression middleware
+- Added rate limiting: API endpoints (100 req/15min), batch uploads & contact form (10 req/min)
+- Added Morgan request logging (combined format in production, dev format in development)
+- Added health check endpoint at `/health` for load balancers
+- Improved error handling: no stack traces in production, structured JSON error logging
+- Added request body size limits (10MB)
+- New dependencies: helmet, cors, compression, morgan, rate-limiter-flexible
+
 **January 16, 2026 - Patient Data Pass-Through**:
 - Added support for extracting patient data from CSV/Excel uploads (name, ID, email, DOB)
 - Name detection handles multiple formats: separate First/Last columns, combined "First Last", "Last, First"
