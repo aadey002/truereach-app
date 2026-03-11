@@ -1,0 +1,437 @@
+![TrueReach Logo](https://true-reach.app/assets/image_1762494775992-VB09X4Yh.png)
+
+# Total Health Care
+## Truereach Integration Client Delivery Document
+
+### Document Control
+
+| Item | Details |
+|---|---|
+| Client | Total Health Care |
+| Application | ST Admin Web |
+| Integration | Truereach Phone Validation Widget |
+| Document Type | Client Delivery Run Book |
+| Version | 1.1 |
+| Document Date | March 10, 2026 |
+| Prepared By | Implementation Team |
+
+### Version History
+
+| Version | Date | Description |
+|---|---|---|
+| 1.0 | March 10, 2026 | Initial client delivery document |
+| 1.1 | March 10, 2026 | Added logo, formal approval section, simplified client-facing wording |
+
+## 1. Executive Summary
+
+Total Health Care requested integration of Truereach phone validation into ST Admin Web to improve the accuracy of phone numbers entered during user registration and future onboarding workflows.
+
+This delivery provides:
+
+- Real-time phone number validation through Truereach
+- Better quality of captured contact information
+- A reusable approach that can be extended to additional forms
+- A practical run book for validation, deployment checks, and support
+
+This document is designed for client stakeholders, operational teams, and delivery teams. It explains what has been delivered, what it supports today, and how it should be checked after deployment.
+
+## 2. Scope of Delivery
+
+The delivered scope includes:
+
+- Integration of Truereach phone validation into ST Admin Web
+- Initial implementation in the registration workflow
+- Reusable shared support for future phone-enabled forms
+- Operational guidance for validation and support teams
+
+The current scope does not include:
+
+- Rollout to every phone-enabled module in the application
+- Full platform-wide automated regression coverage for future expansions
+- Environment-managed endpoint configuration improvements
+
+## 3. Business Value
+
+This integration supports the following business outcomes:
+
+- Improved quality of phone number data
+- Reduced risk of incorrect contact details being stored
+- Better readiness for communication, reminders, and outreach workflows
+- A repeatable pattern for future expansion without redesign
+
+## 4. Solution Summary
+
+The delivered process is straightforward:
+
+1. A user enters a phone number.
+2. The application waits briefly before validating the value.
+3. The number is checked through the Truereach service.
+4. The system receives a validation result.
+5. The user receives a clear valid or invalid response.
+6. The workflow can prevent submission when an invalid number is entered.
+
+## 5. What Has Been Delivered
+
+The delivery includes:
+
+- Truereach widget loading capability
+- Truereach validation service integration
+- Reusable shared component support for future use
+- Registration workflow implementation as the baseline use case
+
+The registration workflow now acts as the approved reference model for later adoption in other application areas.
+
+## 6. Current Coverage
+
+The Truereach integration is currently active in the registration workflow of ST Admin Web.
+
+This same approach can be extended in future phases to:
+
+- User management
+- Profile maintenance
+- Shipper onboarding
+- Carrier onboarding
+- Other forms that capture phone numbers
+
+## 7. External Dependency Summary
+
+The solution depends on the availability of the Truereach platform services below:
+
+- Widget URL: `https://true-reach.app/phone-validator-widget.js`
+- Validation API: `https://true-reach.app/api/validate-realtime`
+
+The deployment environment must allow outbound HTTPS access to these services.
+
+## 8. Reuse Model for Future Expansion
+
+The delivered implementation is reusable. For future forms, the recommended model is:
+
+1. Add the shared Truereach-enabled support to the target feature.
+2. Add the phone field to the form.
+3. Validate the field after a short delay rather than on every keystroke.
+4. Show a clear success or failure message to the user.
+5. Stop submission when the business process requires a valid phone number.
+
+This means future rollout can be achieved with controlled incremental effort rather than a new design exercise.
+
+## 9. Service Summary
+
+The application validates phone numbers by sending them to the Truereach validation service.
+
+Endpoint:
+
+```text
+POST https://true-reach.app/api/validate-realtime
+```
+
+Example request:
+
+```json
+{
+  "phone": "+15551234567",
+  "country": "US"
+}
+```
+
+Example response:
+
+```json
+{
+  "isValid": true,
+  "isMobile": true,
+  "isPossible": true,
+  "country": "US",
+  "type": "MOBILE",
+  "formatted": "+1 555-123-4567",
+  "message": "Valid mobile number"
+}
+```
+
+## 10. Deployment Readiness Checklist
+
+Before production release, confirm the following:
+
+- The registration workflow loads correctly in the target environment
+- The Truereach endpoints are reachable
+- Phone validation occurs as expected
+- Invalid phone numbers are blocked where required
+- Valid phone numbers allow workflow completion
+- No browser console or network errors appear during validation
+
+## 11. Operational Run Book
+
+### Application Startup
+
+Use the standard application startup process:
+
+```powershell
+npm install
+npm run start
+```
+
+If a local proxy is required:
+
+```powershell
+npm run start:proxy
+```
+
+Default local URL:
+
+- `http://localhost:4100`
+
+### Functional Validation Procedure
+
+After deployment or during QA, use the following checks:
+
+1. Open the registration form or any enabled form containing the phone field.
+2. Enter a very short number.
+   Expected result: validation should not trigger immediately.
+3. Enter a complete phone number.
+   Expected result: validation should run after the configured delay.
+4. Confirm the application shows validation feedback.
+5. Confirm invalid numbers cannot proceed when blocking is required.
+6. Confirm valid numbers allow the process to continue.
+
+## 12. Support Guidance
+
+### If the widget does not load
+
+Check:
+
+- Reachability of the Truereach widget endpoint
+- Firewall or proxy restrictions
+- Browser security policy restrictions
+
+### If validation requests fail
+
+Check:
+
+- Reachability of the Truereach validation API
+- Outbound HTTPS access from the environment
+- Completeness of the request content
+- Browser network error details
+
+### If validation does not trigger
+
+Check:
+
+- Phone field mapping in the form
+- Validation event setup
+- Trigger conditions and delay rules
+- Service integration wiring
+
+### If the shared component is unavailable in another module
+
+Check:
+
+- Shared module inclusion in the target feature module
+- Shared component export configuration
+- Feature module import configuration
+
+## 13. Recommended Future Improvements
+
+For broader rollout, the following improvements are recommended:
+
+- Move Truereach endpoint values into managed environment settings
+- Improve typed response handling
+- Expand automated testing coverage
+- Add monitoring for validation failures
+- Extend the same pattern to other onboarding and profile workflows
+
+## 14. Simple Technical Integration Options
+
+The Truereach integration approach can be applied in different frontend frameworks. The steps below are intentionally simple and are meant to guide future rollout discussions.
+
+Common technical behavior across all frameworks:
+
+- Use an HTTPS `POST` request to the Truereach validation API
+- Send a request body with `phone` and `country`
+- Trigger validation after a short debounce, normally 300 to 500 milliseconds
+- Store the validation result in local form or component state
+- Use the result to show feedback and control form submission
+
+### Angular
+
+Recommended steps:
+
+1. Add the Truereach validation service to the shared services layer.
+2. Add the phone field to a reactive form.
+3. Trigger validation from the phone field value change event after a short delay.
+4. Show a simple valid or invalid message in the form.
+5. Prevent submission when a valid phone number is required.
+
+Technical details:
+
+- Use `ReactiveFormsModule` with `FormControl` or `formControlName`
+- Trigger validation from `valueChanges`
+- Use debounce logic before calling the Truereach endpoint
+- Store the result in variables such as `phoneIsValid` and `phoneValidationMessage`
+- Disable submit when the form is invalid or the phone validation fails
+
+Simple flow:
+
+- User enters phone number
+- Angular form captures the value
+- Application calls Truereach API
+- UI shows validation result
+- Form submits only when the phone number is valid
+
+### React
+
+Recommended steps:
+
+1. Create a reusable phone input component.
+2. Store the phone number in component state.
+3. Trigger validation after input changes using a short debounce.
+4. Call the Truereach API from the component or shared API layer.
+5. Show validation feedback below the field.
+6. Block submit when the business process requires a valid phone number.
+
+Technical details:
+
+- Use component state such as `phone`, `isValid`, and `message`
+- Use a debounced input handler or `useEffect`-based validation flow
+- Keep the API call in a shared service or API utility module
+- Update state from the Truereach response
+- Use the validation state to enable or disable submit actions
+
+Simple flow:
+
+- User enters phone number
+- React state updates
+- Debounced API validation runs
+- UI displays valid or invalid result
+- Submit is enabled only when validation passes
+
+### Vue.js
+
+Recommended steps:
+
+1. Add the phone field to a Vue component or shared form component.
+2. Bind the phone number using the standard Vue model pattern.
+3. Watch the phone value and trigger validation after a short delay.
+4. Call the Truereach API through a service or utility layer.
+5. Show validation feedback in the template.
+6. Prevent submission when a valid phone number is required.
+
+Technical details:
+
+- Use `v-model` for the phone field
+- Use a watcher, method, or debounced input handler for validation
+- Keep the API request in a shared service or utility file
+- Store the result in reactive values such as `isValid` and `validationMessage`
+- Use the validation result to control submit behavior and status display
+
+Simple flow:
+
+- User enters phone number
+- Vue model updates
+- Watcher or handler triggers validation
+- Truereach response is displayed in the UI
+- Form continues only when validation is successful
+
+### JavaScript
+
+Recommended steps:
+
+1. Add a standard HTML phone input field.
+2. Capture the input value using a JavaScript event listener.
+3. Apply a short debounce before sending validation.
+4. Call the Truereach API using `fetch` or an equivalent HTTP utility.
+5. Show valid or invalid feedback near the input.
+6. Prevent submit when a valid phone number is required.
+
+Technical details:
+
+- Use `addEventListener` on the input field
+- Use `setTimeout` or a small debounce helper to limit API calls
+- Use `fetch` with method `POST` and `Content-Type: application/json`
+- Store validation output in local variables or page-level state
+- Update button enabled or disabled state based on the validation result
+
+Simple flow:
+
+- User enters phone number
+- JavaScript reads the value
+- Debounced API validation runs
+- Page shows validation result
+- Submit is allowed only when validation passes
+
+### HTML
+
+Recommended steps:
+
+1. Add a phone input element to the page.
+2. Add a validation message area below the field.
+3. Add a submit button that can be enabled or disabled.
+4. Connect the page to a JavaScript validation function.
+5. Call the Truereach API when the user finishes typing or leaves the field.
+6. Show feedback and control form submission based on the result.
+
+Technical details:
+
+- HTML alone cannot call the Truereach API directly without JavaScript support
+- The minimum setup is HTML for the field and JavaScript for validation logic
+- Add an input element, status message element, and submit button
+- Use IDs or selectors so JavaScript can read the field value and update the page
+- Keep the feedback message close to the phone field for clarity
+
+Simple flow:
+
+- User enters phone number in the HTML form
+- JavaScript captures the field value
+- Truereach validation runs
+- HTML page updates with valid or invalid feedback
+- Form submission follows the validation result
+
+### Common Implementation Guidance
+
+For all frontend frameworks, the recommended approach is the same:
+
+- Validate only after a short delay, not on every keystroke
+- Show a simple valid or invalid response to the user
+- Keep the API call in a reusable service layer where possible
+- Prevent invalid numbers from moving forward where required by the workflow
+- Confirm outbound access to the Truereach endpoints in each environment
+
+Standard request format:
+
+```json
+{
+  "phone": "+15551234567",
+  "country": "US"
+}
+```
+
+Standard response handling:
+
+- Success state: valid number confirmed and workflow can continue
+- Validation failure: invalid number message shown to the user
+- Service failure: temporary service issue message shown and submit rules handled safely
+
+## 15. Client Acceptance Summary
+
+The delivered Truereach integration provides Total Health Care with:
+
+- A working phone validation capability in ST Admin Web
+- A live baseline implementation in the registration workflow
+- A reusable model for future rollout
+- A supportable process for validation and troubleshooting
+
+## 16. Formal Approval and Sign-Off
+
+### Delivery Summary
+
+This document confirms delivery of the Truereach phone validation integration for ST Admin Web based on the agreed implementation baseline.
+
+### Approval Record
+
+| Approval Role | Name | Signature | Date |
+|---|---|---|---|
+| Client Representative |  |  |  |
+| Delivery Representative |  |  |  |
+| Project Manager |  |  |  |
+
+### Sign-Off Statement
+
+By signing this section, the client and delivery representatives acknowledge review of the delivered Truereach integration, associated run book guidance, and the agreed implementation scope described in this document.
