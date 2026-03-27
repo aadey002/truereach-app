@@ -6,3 +6,9 @@ id = "YwxHs294C5LykAdI8Yrtc"
 uri = "file://TrueReach_Compliance_SRS_PRD.md"
 type = "text"
 title = "TrueReach HIPAA/HITRUST Compliance SRS/PRD"
+
+[[outputs]]
+id = "-v2zhiwuH9sYLM91g34up"
+uri = "file://TrueReach_Project_Scope.md"
+type = "text"
+title = "TrueReach Project Scope Document"
