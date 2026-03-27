@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "YwxHs294C5LykAdI8Yrtc"
+uri = "file://TrueReach_Compliance_SRS_PRD.md"
+type = "text"
+title = "TrueReach HIPAA/HITRUST Compliance SRS/PRD"
