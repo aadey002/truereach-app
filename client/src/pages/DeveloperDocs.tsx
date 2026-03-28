@@ -30,6 +30,7 @@ import {
   Shield,
   Terminal,
   XCircle,
+  Hospital,
 } from "lucide-react";
 
 export default function DeveloperDocs() {
@@ -191,7 +192,7 @@ export default function DeveloperDocs() {
       </div>
 
       <Tabs defaultValue="api" className="space-y-4 md:space-y-6">
-        <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 h-auto">
+        <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 h-auto">
           <TabsTrigger
             value="api"
             data-testid="tab-api"
@@ -235,6 +236,14 @@ export default function DeveloperDocs() {
             <Settings className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
             <span className="hidden sm:inline">Technical Specs</span>
             <span className="sm:hidden">Specs</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="pms"
+            data-testid="tab-pms"
+            className="text-xs md:text-sm py-2"
+          >
+            <Hospital className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+            PMS
           </TabsTrigger>
         </TabsList>
 
@@ -1434,6 +1443,193 @@ phoneInput.addEventListener('input', (e) => {
                   <span className="text-sm">Data Retention</span>
                   <Badge variant="outline">HIPAA auto-expire: 30 minutes</Badge>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ===================== PMS TAB ===================== */}
+        <TabsContent value="pms" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                Quick Start — 2 Line Embed
+                <Badge variant="secondary">HTML</Badge>
+              </CardTitle>
+              <CardDescription>
+                Add this script tag before &lt;/body&gt; in your PMS HTML template
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="relative">
+                <pre className="bg-slate-900 text-slate-100 p-4 rounded-lg overflow-x-auto text-sm">
+                  {`<script
+  src="https://flask-data-viz-aadey002.replit.app/widget/truereach-widget.js"
+  data-api-key="YOUR_API_KEY"
+  data-org-id="YOUR_ORG_ID"
+  data-user-id="CURRENT_USER_ID"
+></script>`}
+                </pre>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="absolute top-2 right-2"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`<script\n  src="https://flask-data-viz-aadey002.replit.app/widget/truereach-widget.js"\n  data-api-key="YOUR_API_KEY"\n  data-org-id="YOUR_ORG_ID"\n  data-user-id="CURRENT_USER_ID"\n></script>`);
+                  }}
+                >
+                  Copy
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                Field Targeting — Auto-detects in this order
+              </CardTitle>
+              <CardDescription>
+                The widget scans the page using 5 fallback strategies to find phone inputs
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="relative">
+                <pre className="bg-slate-900 text-slate-100 p-4 rounded-lg overflow-x-auto text-sm">
+                  {`1. input[type="tel"]
+2. .truereach-phone
+3. #phone, #phone_number, #primary_phone, #alt_phone
+4. input[name*="phone"]
+5. input[placeholder*="phone"]`}
+                </pre>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="absolute top-2 right-2"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`1. input[type="tel"]\n2. .truereach-phone\n3. #phone, #phone_number, #primary_phone, #alt_phone\n4. input[name*="phone"]\n5. input[placeholder*="phone"]`);
+                  }}
+                >
+                  Copy
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                JavaScript Events
+                <Badge variant="secondary">JS</Badge>
+              </CardTitle>
+              <CardDescription>
+                Listen for validation results to trigger custom logic in your PMS
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="relative">
+                <pre className="bg-slate-900 text-slate-100 p-4 rounded-lg overflow-x-auto text-sm">
+                  {`document.addEventListener('truereach:validated', function(e) {
+  const { status, phone, carrier, reason } = e.detail;
+  // status = "valid" | "landline" | "invalid"
+  if (status === 'invalid') {
+    console.log('Invalid number:', reason);
+  }
+  if (status === 'valid') {
+    document.getElementById('sms-btn').disabled = false;
+  }
+});`}
+                </pre>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="absolute top-2 right-2"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`document.addEventListener('truereach:validated', function(e) {\n  const { status, phone, carrier, reason } = e.detail;\n  // status = "valid" | "landline" | "invalid"\n  if (status === 'invalid') {\n    console.log('Invalid number:', reason);\n  }\n  if (status === 'valid') {\n    document.getElementById('sms-btn').disabled = false;\n  }\n});`);
+                  }}
+                >
+                  Copy
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                Python Server-Side Validation
+                <Badge variant="secondary">Python</Badge>
+              </CardTitle>
+              <CardDescription>
+                Call the validation API directly from your backend
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="relative">
+                <pre className="bg-slate-900 text-slate-100 p-4 rounded-lg overflow-x-auto text-sm">
+                  {`import requests
+
+def validate_phone(phone_number, api_key):
+    response = requests.get(
+        'https://flask-data-viz-aadey002.replit.app/api/validate',
+        params={'phone': phone_number, 'key': api_key}
+    )
+    data = response.json()
+    return {
+        'valid':       data.get('valid'),
+        'sms_capable': data.get('is_sms_capable'),
+        'carrier':     data.get('carrier'),
+        'line_type':   data.get('line_type'),
+        'reason':      data.get('reason'),
+    }`}
+                </pre>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="absolute top-2 right-2"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`import requests\n\ndef validate_phone(phone_number, api_key):\n    response = requests.get(\n        'https://flask-data-viz-aadey002.replit.app/api/validate',\n        params={'phone': phone_number, 'key': api_key}\n    )\n    data = response.json()\n    return {\n        'valid':       data.get('valid'),\n        'sms_capable': data.get('is_sms_capable'),\n        'carrier':     data.get('carrier'),\n        'line_type':   data.get('line_type'),\n        'reason':      data.get('reason'),\n    }`);
+                  }}
+                >
+                  Copy
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                API Response Format
+                <Badge variant="secondary">JSON</Badge>
+              </CardTitle>
+              <CardDescription>
+                Every validation returns a consistent JSON object
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="relative">
+                <pre className="bg-slate-900 text-slate-100 p-4 rounded-lg overflow-x-auto text-sm">
+                  {`{
+  "valid": true,
+  "is_sms_capable": true,
+  "line_type": "mobile",
+  "carrier": "T-Mobile",
+  "country_code": "US",
+  "formatted": "+1 (404) 555-1234",
+  "reason": null
+}`}
+                </pre>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="absolute top-2 right-2"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`{\n  "valid": true,\n  "is_sms_capable": true,\n  "line_type": "mobile",\n  "carrier": "T-Mobile",\n  "country_code": "US",\n  "formatted": "+1 (404) 555-1234",\n  "reason": null\n}`);
+                  }}
+                >
+                  Copy
+                </Button>
               </div>
             </CardContent>
           </Card>
