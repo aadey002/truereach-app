@@ -269,9 +269,9 @@ export default function Landing() {
               className="w-full"
               variant="outline"
               data-testid="button-view-integration"
-              onClick={() => window.location.href = '/developer-docs'}
+              onClick={() => window.location.href = '/pms-demo'}
             >
-              Developer Docs
+              See PMS Integration Demo
             </Button>
           </Card>
 
