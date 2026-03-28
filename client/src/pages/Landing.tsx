@@ -241,42 +241,6 @@ export default function Landing() {
           <Card className="p-4 md:p-8 hover-elevate border-primary">
             <div className="flex justify-center mb-3 md:mb-4">
               <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                <Zap className="w-6 h-6 md:w-8 md:h-8 text-primary" />
-              </div>
-            </div>
-            <h3 className="text-xl md:text-2xl font-bold mb-2 md:mb-4 text-center">
-              Real-Time API
-            </h3>
-            <p className="text-sm md:text-base text-muted-foreground text-center mb-4 md:mb-6">
-              Validate phone numbers instantly as users type. Perfect for
-              patient registration and intake forms.
-            </p>
-            <ul className="space-y-2 mb-6">
-              <li className="flex items-start gap-2">
-                <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                <span className="text-sm">Instant validation feedback</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                <span className="text-sm">Auto-format phone numbers</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                <span className="text-sm">Landline & VoIP warnings</span>
-              </li>
-            </ul>
-            <Button 
-              className="w-full" 
-              data-testid="button-try-realtime"
-              onClick={() => window.location.href = '/widget-demo'}
-            >
-              Try Live Demo
-            </Button>
-          </Card>
-
-          <Card className="p-4 md:p-8 hover-elevate">
-            <div className="flex justify-center mb-3 md:mb-4">
-              <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-primary/10 flex items-center justify-center">
                 <Code2 className="w-6 h-6 md:w-8 md:h-8 text-primary" />
               </div>
             </div>
@@ -308,6 +272,42 @@ export default function Landing() {
               onClick={() => window.location.href = '/developer-docs'}
             >
               Developer Docs
+            </Button>
+          </Card>
+
+          <Card className="p-4 md:p-8 hover-elevate">
+            <div className="flex justify-center mb-3 md:mb-4">
+              <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <Zap className="w-6 h-6 md:w-8 md:h-8 text-primary" />
+              </div>
+            </div>
+            <h3 className="text-xl md:text-2xl font-bold mb-2 md:mb-4 text-center">
+              Real-Time API
+            </h3>
+            <p className="text-sm md:text-base text-muted-foreground text-center mb-4 md:mb-6">
+              Validate phone numbers instantly as users type. Perfect for
+              patient registration and intake forms.
+            </p>
+            <ul className="space-y-2 mb-6">
+              <li className="flex items-start gap-2">
+                <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                <span className="text-sm">Instant validation feedback</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                <span className="text-sm">Auto-format phone numbers</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                <span className="text-sm">Landline & VoIP warnings</span>
+              </li>
+            </ul>
+            <Button
+              className="w-full"
+              data-testid="button-try-realtime"
+              onClick={() => window.location.href = '/widget-demo'}
+            >
+              Try Live Demo
             </Button>
           </Card>
         </div>

@@ -24,8 +24,8 @@ interface StatusConfig {
 
 // ── Color tokens ───────────────────────────────────────────────────────────
 const STATUS: Record<ValidationStatus, StatusConfig> = {
-  idle:     { border: "#334155", glow: "none",                           badge: null, label: "" },
-  checking: { border: "#94a3b8", glow: "none",                           badge: "⟳",  label: "Validating…" },
+  idle:     { border: "hsl(var(--border))", glow: "none",                           badge: null, label: "" },
+  checking: { border: "hsl(var(--muted-foreground))", glow: "none",                           badge: "⟳",  label: "Validating…" },
   valid:    { border: "#22c55e", glow: "0 0 0 3px rgba(34,197,94,.25)",  badge: "✓",  label: "Valid & Textable" },
   landline: { border: "#3b82f6", glow: "0 0 0 3px rgba(59,130,246,.25)", badge: "☎",  label: "Valid — Not Textable" },
   invalid:  { border: "#ef4444", glow: "0 0 0 3px rgba(239,68,68,.25)",  badge: "✕",  label: "Invalid Number" },
@@ -62,54 +62,31 @@ function PhoneField({ label, value, onChange, status, reason, carrier, onValidat
 
   return (
     <div className="flex flex-col gap-1">
-      <label style={{ color: "#94a3b8", fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" as const }}>
+      <label className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
         {label}
       </label>
       <div className="relative flex items-center">
         <div
-          className="flex items-center w-full"
+          className="flex items-center w-full rounded-lg bg-background transition-all duration-300"
           style={{
             border: `2px solid ${s.border}`,
             boxShadow: s.glow,
-            borderRadius: 8,
-            background: "#0f172a",
-            transition: "border-color 0.3s, box-shadow 0.3s",
           }}
         >
-          <span style={{ padding: "0 10px", color: "#475569", fontSize: 14 }}>📞</span>
+          <span className="px-2.5 text-muted-foreground text-sm">📞</span>
           <input
             value={value}
             onChange={(e) => onChange(fmt(e.target.value))}
             onBlur={onValidate}
             placeholder="(555) 000-0000"
-            style={{
-              flex: 1,
-              background: "transparent",
-              border: "none",
-              outline: "none",
-              color: "#e2e8f0",
-              fontSize: 15,
-              fontFamily: "'JetBrains Mono', monospace",
-              letterSpacing: "0.04em",
-              padding: "10px 0",
-            }}
+            className="flex-1 bg-transparent border-none outline-none text-foreground text-[15px] font-mono tracking-wide py-2.5"
           />
           {status === "checking" && (
-            <span style={{ padding: "0 12px", color: "#64748b", fontSize: 18, animation: "spin 1s linear infinite" }}>⟳</span>
+            <span className="px-3 text-muted-foreground text-lg animate-spin">⟳</span>
           )}
           {hasResult && (
             <span
-              className={STATUS_BG[status] || ""}
-              style={{
-                margin: "4px 6px",
-                borderRadius: 6,
-                padding: "2px 10px",
-                fontSize: 11,
-                fontWeight: 700,
-                color: "#fff",
-                letterSpacing: "0.05em",
-                whiteSpace: "nowrap" as const,
-              }}
+              className={`${STATUS_BG[status] || ""} m-1 mx-1.5 rounded-md px-2.5 py-0.5 text-[11px] font-bold text-white tracking-wide whitespace-nowrap`}
             >
               {s.badge} {s.label}
             </span>
@@ -117,10 +94,10 @@ function PhoneField({ label, value, onChange, status, reason, carrier, onValidat
         </div>
       </div>
       {hasResult && reason && (
-        <p style={{ color: "#ef4444", fontSize: 11, marginTop: 2, paddingLeft: 4 }}>⚠ {reason}</p>
+        <p className="text-destructive text-[11px] mt-0.5 pl-1">⚠ {reason}</p>
       )}
       {hasResult && carrier && status !== "invalid" && (
-        <p style={{ color: "#64748b", fontSize: 11, marginTop: 2, paddingLeft: 4 }}>Carrier: {carrier}</p>
+        <p className="text-muted-foreground text-[11px] mt-0.5 pl-1">Carrier: {carrier}</p>
       )}
     </div>
   );
@@ -129,24 +106,20 @@ function PhoneField({ label, value, onChange, status, reason, carrier, onValidat
 // ── Legend ────────────────────────────────────────────────────────────────
 function Legend() {
   return (
-    <div style={{
-      display: "flex", gap: 16, flexWrap: "wrap" as const,
-      background: "#0f172a", borderRadius: 10, padding: "10px 16px",
-      border: "1px solid #1e293b", marginBottom: 20,
-    }}>
+    <div className="flex gap-4 flex-wrap bg-card rounded-[10px] px-4 py-2.5 border border-border mb-5">
       {[
         { color: "#22c55e", label: "Valid & SMS-capable" },
         { color: "#3b82f6", label: "Valid – Landline/VoIP only" },
         { color: "#ef4444", label: "Invalid / Undeliverable" },
       ].map(({ color, label }) => (
-        <div key={label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{ width: 14, height: 14, borderRadius: 3, background: color }} />
-          <span style={{ color: "#94a3b8", fontSize: 12 }}>{label}</span>
+        <div key={label} className="flex items-center gap-2">
+          <div className="w-3.5 h-3.5 rounded-sm" style={{ background: color }} />
+          <span className="text-muted-foreground text-xs">{label}</span>
         </div>
       ))}
-      <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 6 }}>
-        <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#7c3aed", animation: "pulse 2s infinite" }} />
-        <span style={{ color: "#7c3aed", fontSize: 11, fontWeight: 600 }}>TrueReach Active</span>
+      <div className="ml-auto flex items-center gap-1.5">
+        <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+        <span className="text-primary text-[11px] font-semibold">TrueReach Active</span>
       </div>
     </div>
   );
@@ -211,71 +184,68 @@ export default function PMSDemo() {
   }, []);
 
   return (
-    <div style={{ minHeight: "100vh", background: "#020817", fontFamily: "'Inter', system-ui, sans-serif", padding: 24 }}>
+    <div className="min-h-screen bg-background font-sans p-6">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600;700&display=swap');
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap');
         @keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:none} }
-        * { box-sizing: border-box; }
       `}</style>
 
-      <div style={{ maxWidth: 860, margin: "0 auto" }}>
+      <div className="max-w-[860px] mx-auto">
 
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: "linear-gradient(135deg,#7c3aed,#4f46e5)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>💊</div>
-            <span style={{ color: "#e2e8f0", fontWeight: 700, fontSize: 18 }}>RxCare PMS</span>
-            <span style={{ color: "#334155", fontSize: 18 }}>·</span>
-            <span style={{ color: "#64748b", fontSize: 13 }}>Patient Profile</span>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-base">💊</div>
+            <span className="text-foreground font-bold text-lg">RxCare PMS</span>
+            <span className="text-border text-lg">·</span>
+            <span className="text-muted-foreground text-[13px]">Patient Profile</span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#0f172a", border: "1px solid #7c3aed40", borderRadius: 8, padding: "6px 12px" }}>
-            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#7c3aed", animation: "pulse 2s infinite" }} />
-            <span style={{ color: "#a78bfa", fontSize: 12, fontWeight: 600 }}>TrueReach</span>
-            <span style={{ color: "#4c1d95", fontSize: 10 }}>v2.4 embedded</span>
+          <div className="flex items-center gap-2 bg-card border border-primary/25 rounded-lg px-3 py-1.5">
+            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+            <span className="text-primary text-xs font-semibold">TrueReach</span>
+            <span className="text-primary/40 text-[10px]">v2.4 embedded</span>
           </div>
         </div>
 
         <Legend />
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 20 }}>
+        <div className="grid grid-cols-[1fr_340px] gap-5">
 
           {/* Patient Card */}
-          <div style={{ background: "#0f172a", border: "1px solid #1e293b", borderRadius: 14, overflow: "hidden" }}>
-            <div style={{ background: "linear-gradient(135deg, #1e293b, #0f172a)", padding: "20px 24px", borderBottom: "1px solid #1e293b", display: "flex", gap: 16, alignItems: "center" }}>
-              <div style={{ width: 56, height: 56, borderRadius: 12, background: "linear-gradient(135deg,#7c3aed30,#3b82f620)", border: "1px solid #334155", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>👩‍⚕️</div>
+          <div className="bg-card border border-border rounded-[14px] overflow-hidden">
+            <div className="bg-secondary/50 px-6 py-5 border-b border-border flex gap-4 items-center">
+              <div className="w-14 h-14 rounded-xl bg-primary/10 border border-border flex items-center justify-center text-2xl">👩‍⚕️</div>
               <div>
-                <h2 style={{ color: "#f1f5f9", fontWeight: 700, fontSize: 18, margin: 0 }}>{patient.name}</h2>
-                <div style={{ display: "flex", gap: 12, marginTop: 4 }}>
-                  <span style={{ color: "#64748b", fontSize: 12 }}>DOB: <span style={{ color: "#94a3b8" }}>{patient.dob}</span></span>
-                  <span style={{ color: "#64748b", fontSize: 12 }}>MRN: <span style={{ color: "#94a3b8", fontFamily: "JetBrains Mono" }}>{patient.mrn}</span></span>
+                <h2 className="text-foreground font-bold text-lg m-0">{patient.name}</h2>
+                <div className="flex gap-3 mt-1">
+                  <span className="text-muted-foreground text-xs">DOB: <span className="text-foreground/70">{patient.dob}</span></span>
+                  <span className="text-muted-foreground text-xs">MRN: <span className="text-foreground/70 font-mono">{patient.mrn}</span></span>
                 </div>
               </div>
-              <div style={{ marginLeft: "auto" }}>
-                <div style={{ background: "#dc262620", color: "#f87171", fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 20, border: "1px solid #dc262640" }}>
+              <div className="ml-auto">
+                <div className="bg-destructive/10 text-destructive text-[11px] font-semibold px-2.5 py-0.5 rounded-full border border-destructive/25">
                   ⚠ {patient.allergies}
                 </div>
               </div>
             </div>
 
-            <div style={{ padding: 24, display: "flex", flexDirection: "column" as const, gap: 20 }}>
+            <div className="p-6 flex flex-col gap-5">
               {/* Quick demo presets */}
-              <div style={{ background: "#1e293b50", borderRadius: 8, padding: "10px 14px" }}>
-                <p style={{ color: "#475569", fontSize: 11, fontWeight: 600, margin: "0 0 8px", textTransform: "uppercase" as const, letterSpacing: "0.08em" }}>Quick Demo — Load Phone</p>
-                <div style={{ display: "flex", gap: 8 }}>
+              <div className="bg-secondary/30 rounded-lg px-3.5 py-2.5">
+                <p className="text-muted-foreground/60 text-[11px] font-semibold mb-2 uppercase tracking-wider">Quick Demo — Load Phone</p>
+                <div className="flex gap-2">
                   {PRESETS.map((p) => (
                     <button
                       key={p.label}
                       onClick={() => { setPrimaryPhone(p.phone); setPrimaryStatus("idle"); setPrimaryMeta({}); }}
-                      style={{ background: "#0f172a", border: "1px solid #334155", borderRadius: 6, color: "#94a3b8", fontSize: 12, padding: "4px 12px", cursor: "pointer" }}
+                      className="bg-background border border-border rounded-md text-muted-foreground text-xs px-3 py-1 cursor-pointer hover:border-primary/50 transition-colors"
                     >
                       {p.label}
                     </button>
                   ))}
                   <button
                     onClick={() => validate(primaryPhone, setPrimaryStatus, setPrimaryMeta, "Primary")}
-                    style={{ marginLeft: "auto", background: "linear-gradient(135deg,#7c3aed,#4f46e5)", border: "none", borderRadius: 6, color: "#fff", fontSize: 12, padding: "4px 14px", cursor: "pointer", fontWeight: 600 }}
+                    className="ml-auto bg-primary border-none rounded-md text-primary-foreground text-xs px-3.5 py-1 cursor-pointer font-semibold hover:bg-primary/90 transition-colors"
                   >
                     ↻ Re-validate
                   </button>
@@ -303,26 +273,22 @@ export default function PMSDemo() {
 
               {[["Insurance", patient.insurance], ["Primary Physician", "Dr. Raymond K. Patel, MD"]].map(([lbl, val]) => (
                 <div key={lbl}>
-                  <label style={{ color: "#94a3b8", fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" as const, display: "block", marginBottom: 4 }}>{lbl}</label>
-                  <div style={{ background: "#0f172a", border: "1px solid #1e293b", borderRadius: 8, padding: "10px 14px", color: "#e2e8f0", fontSize: 14 }}>{val}</div>
+                  <label className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase block mb-1">{lbl}</label>
+                  <div className="bg-background border border-border rounded-lg px-3.5 py-2.5 text-foreground text-sm">{val}</div>
                 </div>
               ))}
 
-              <div style={{ display: "flex", gap: 10, paddingTop: 4 }}>
-                <button style={{ flex: 1, background: "linear-gradient(135deg,#7c3aed,#4f46e5)", border: "none", borderRadius: 8, color: "#fff", fontWeight: 600, fontSize: 14, padding: "11px", cursor: "pointer" }}>
+              <div className="flex gap-2.5 pt-1">
+                <button className="flex-1 bg-primary border-none rounded-lg text-primary-foreground font-semibold text-sm py-2.5 cursor-pointer hover:bg-primary/90 transition-colors">
                   Save Profile
                 </button>
                 <button
                   disabled={primaryStatus !== "valid" && altStatus !== "valid"}
-                  style={{
-                    flex: 1,
-                    background: primaryStatus === "valid" || altStatus === "valid" ? "#16a34a20" : "#1e293b",
-                    border: `1px solid ${primaryStatus === "valid" || altStatus === "valid" ? "#22c55e40" : "#1e293b"}`,
-                    borderRadius: 8,
-                    color: primaryStatus === "valid" || altStatus === "valid" ? "#22c55e" : "#475569",
-                    fontWeight: 600, fontSize: 14, padding: "11px",
-                    cursor: primaryStatus === "valid" || altStatus === "valid" ? "pointer" : "not-allowed",
-                  }}
+                  className={`flex-1 rounded-lg font-semibold text-sm py-2.5 transition-colors ${
+                    primaryStatus === "valid" || altStatus === "valid"
+                      ? "bg-green-500/10 border border-green-500/25 text-green-500 cursor-pointer hover:bg-green-500/20"
+                      : "bg-secondary border border-border text-muted-foreground/50 cursor-not-allowed"
+                  }`}
                 >
                   📱 Send SMS Reminder
                 </button>
@@ -331,28 +297,28 @@ export default function PMSDemo() {
           </div>
 
           {/* Right panel */}
-          <div style={{ display: "flex", flexDirection: "column" as const, gap: 16 }}>
+          <div className="flex flex-col gap-4">
             {/* Validation log */}
-            <div style={{ background: "#0f172a", border: "1px solid #1e293b", borderRadius: 14, overflow: "hidden", flex: 1 }}>
-              <div style={{ padding: "14px 18px", borderBottom: "1px solid #1e293b", display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: 14 }}>📋</span>
-                <span style={{ color: "#e2e8f0", fontWeight: 600, fontSize: 13 }}>Validation Log</span>
-                <span style={{ marginLeft: "auto", background: "#7c3aed20", color: "#a78bfa", fontSize: 10, padding: "2px 8px", borderRadius: 10 }}>TrueReach API</span>
+            <div className="bg-card border border-border rounded-[14px] overflow-hidden flex-1">
+              <div className="px-4 py-3.5 border-b border-border flex items-center gap-2">
+                <span className="text-sm">📋</span>
+                <span className="text-foreground font-semibold text-[13px]">Validation Log</span>
+                <span className="ml-auto bg-primary/10 text-primary text-[10px] px-2 py-0.5 rounded-full">TrueReach API</span>
               </div>
-              <div ref={logRef} style={{ padding: "12px 16px", display: "flex", flexDirection: "column" as const, gap: 6, maxHeight: 200, overflowY: "auto" as const }}>
-                {log.length === 0 && <p style={{ color: "#334155", fontSize: 12, textAlign: "center" as const, padding: "20px 0" }}>No activity yet…</p>}
+              <div ref={logRef} className="px-4 py-3 flex flex-col gap-1.5 max-h-[200px] overflow-y-auto">
+                {log.length === 0 && <p className="text-border text-xs text-center py-5">No activity yet…</p>}
                 {log.map((entry, i) => (
-                  <div key={i} style={{ display: "flex", gap: 8, animation: "fadeIn 0.2s ease" }}>
-                    <span style={{ color: "#475569", fontSize: 10, fontFamily: "JetBrains Mono", flexShrink: 0, paddingTop: 1 }}>{entry.ts}</span>
-                    <span style={{ fontSize: 12, color: entry.type === "error" ? "#f87171" : entry.type === "success" ? "#4ade80" : "#94a3b8" }}>{entry.msg}</span>
+                  <div key={i} className="flex gap-2" style={{ animation: "fadeIn 0.2s ease" }}>
+                    <span className="text-muted-foreground/50 text-[10px] font-mono flex-shrink-0 pt-px">{entry.ts}</span>
+                    <span className={`text-xs ${entry.type === "error" ? "text-destructive" : entry.type === "success" ? "text-green-400" : "text-muted-foreground"}`}>{entry.msg}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* How it works */}
-            <div style={{ background: "#0f172a", border: "1px solid #1e293b", borderRadius: 14, padding: "16px 18px" }}>
-              <p style={{ color: "#7c3aed", fontSize: 11, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.1em", marginBottom: 12 }}>How It Works</p>
+            <div className="bg-card border border-border rounded-[14px] px-4 py-4">
+              <p className="text-primary text-[11px] font-bold uppercase tracking-widest mb-3">How It Works</p>
               {[
                 { icon: "①", text: "Tech opens patient profile in PMS" },
                 { icon: "②", text: "TrueReach script auto-validates on load" },
@@ -360,34 +326,34 @@ export default function PMSDemo() {
                 { icon: "④", text: "Re-validates on any manual edit + blur" },
                 { icon: "⑤", text: "SMS button locks if no valid mobile" },
               ].map(({ icon, text }) => (
-                <div key={icon} style={{ display: "flex", gap: 10, marginBottom: 8 }}>
-                  <span style={{ color: "#7c3aed", fontWeight: 700, fontSize: 13, flexShrink: 0 }}>{icon}</span>
-                  <span style={{ color: "#94a3b8", fontSize: 12 }}>{text}</span>
+                <div key={icon} className="flex gap-2.5 mb-2">
+                  <span className="text-primary font-bold text-[13px] flex-shrink-0">{icon}</span>
+                  <span className="text-muted-foreground text-xs">{text}</span>
                 </div>
               ))}
             </div>
 
             {/* Status key */}
-            <div style={{ background: "#0f172a", border: "1px solid #1e293b", borderRadius: 14, padding: "16px 18px" }}>
-              <p style={{ color: "#64748b", fontSize: 11, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.1em", marginBottom: 10 }}>Border Status Key</p>
+            <div className="bg-card border border-border rounded-[14px] px-4 py-4">
+              <p className="text-muted-foreground text-[11px] font-bold uppercase tracking-widest mb-2.5">Border Status Key</p>
               {[
                 { color: "#22c55e", icon: "✓", label: "Green", desc: "Valid & textable" },
                 { color: "#3b82f6", icon: "☎", label: "Blue",  desc: "Valid, landline only" },
                 { color: "#ef4444", icon: "✕", label: "Red",   desc: "Invalid / flagged" },
               ].map(({ color, icon, label, desc }) => (
-                <div key={label} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                  <div style={{ width: 28, height: 20, borderRadius: 4, border: `2px solid ${color}`, background: `${color}15`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <span style={{ color, fontSize: 10, fontWeight: 700 }}>{icon}</span>
+                <div key={label} className="flex items-center gap-2.5 mb-2">
+                  <div className="w-7 h-5 rounded flex items-center justify-center" style={{ border: `2px solid ${color}`, background: `${color}15` }}>
+                    <span style={{ color }} className="text-[10px] font-bold">{icon}</span>
                   </div>
-                  <span style={{ color, fontSize: 12, fontWeight: 600, width: 40 }}>{label}</span>
-                  <span style={{ color: "#64748b", fontSize: 12 }}>{desc}</span>
+                  <span style={{ color }} className="text-xs font-semibold w-10">{label}</span>
+                  <span className="text-muted-foreground text-xs">{desc}</span>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        <p style={{ textAlign: "center" as const, color: "#1e293b", fontSize: 11, marginTop: 20 }}>
+        <p className="text-center text-border text-[11px] mt-5">
           TrueReach Phone Validation · Embedded SDK Demo · © 2026 TrueReach Health
         </p>
       </div>

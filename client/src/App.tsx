@@ -10,6 +10,7 @@ import WidgetDemo from "@/pages/WidgetDemo";
 import DeveloperDocs from "@/pages/DeveloperDocs";
 import Pricing from "@/pages/Pricing";
 import PMSDemo from "@/pages/PMSDemo";
+import TrueReachDashboard from "@/pages/TrueReachDashboard";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -22,6 +23,7 @@ function Router() {
       <Route path="/developer-docs" component={DeveloperDocs} />
       <Route path="/pricing" component={Pricing} />
       <Route path="/pms-demo" component={PMSDemo} />
+      <Route path="/dashboard" component={TrueReachDashboard} />
       <Route component={NotFound} />
     </Switch>
   );
