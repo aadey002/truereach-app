@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { FileText, Zap, DollarSign, Code, LogIn, LogOut, User, Menu, X } from "lucide-react";
+import { FileText, Zap, DollarSign, Code, LogIn, LogOut, User, Menu, X, Monitor } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -13,6 +13,7 @@ export function Navigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const publicLinks = [
+    { href: "/pms-demo", label: "See PMS Demo", icon: Monitor },
     { href: "/batch", label: "Batch Upload", icon: FileText },
     { href: "/widget-demo", label: "Instant validation", icon: Zap },
     { href: "/pricing", label: "Pricing", icon: DollarSign },
