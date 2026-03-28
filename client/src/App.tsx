@@ -11,6 +11,7 @@ import DeveloperDocs from "@/pages/DeveloperDocs";
 import Pricing from "@/pages/Pricing";
 import PMSDemo from "@/pages/PMSDemo";
 import TrueReachDashboard from "@/pages/TrueReachDashboard";
+import AccessCodeGate from "@/components/AccessCodeGate";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -20,7 +21,7 @@ function Router() {
       <Route path="/batch" component={BatchUpload} />
       <Route path="/widget-demo" component={WidgetDemo} />
       <Route path="/widget-integration">{() => <Redirect to="/developer-docs" />}</Route>
-      <Route path="/developer-docs" component={DeveloperDocs} />
+      <Route path="/developer-docs">{() => <AccessCodeGate><DeveloperDocs /></AccessCodeGate>}</Route>
       <Route path="/pricing" component={Pricing} />
       <Route path="/pms-demo" component={PMSDemo} />
       <Route path="/dashboard" component={TrueReachDashboard} />
