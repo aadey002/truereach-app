@@ -1,9 +1,14 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
+from flask_cors import CORS
 import requests
 import pandas as pd
 import time
+import sqlite3
+import os
+from datetime import datetime
 
 app = Flask(__name__)
+CORS(app)  # Allow widget requests from any PMS domain
 
 # Your Veriphone API Key
 VERIPHONE_API_KEY = "D1D21F3D6FB74E909A0045FB3CA33F1A"
@@ -15,6 +20,159 @@ validation_progress = {
     'status': 'idle',
     'results': []
 }
+
+# ── TrueReach Database ─────────────────────────────────────────────────────
+DB_PATH = os.path.join(os.path.dirname(__file__), "truereach_logs.db")
+
+def init_db():
+    """Creates the logs table if it doesn't exist yet."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS validation_events (
+            id              INTEGER PRIMARY KEY AUTOINCREMENT,
+            api_key         TEXT,
+            org_id          TEXT,
+            user_id         TEXT,
+            event_type      TEXT,
+            phone_last4     TEXT,
+            reason          TEXT,
+            carrier         TEXT,
+            previous_status TEXT,
+            page_url        TEXT,
+            timestamp       TEXT,
+            created_at      TEXT DEFAULT (datetime('now'))
+        )
+    """)
+    conn.commit()
+    conn.close()
+    print("TrueReach DB initialized")
+
+init_db()
+
+
+# ── POST /api/truereach/log ────────────────────────────────────────────────
+@app.route("/api/truereach/log", methods=["POST"])
+def log_event():
+    """Receives validation events from the embedded widget."""
+    try:
+        data = request.get_json(silent=True)
+        if not data:
+            return jsonify({"error": "No data received"}), 400
+        if not data.get("api_key"):
+            return jsonify({"error": "Missing API key"}), 401
+
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO validation_events
+                (api_key, org_id, user_id, event_type, phone_last4,
+                 reason, carrier, previous_status, page_url, timestamp)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            data.get("api_key"),
+            data.get("org_id"),
+            data.get("user_id"),
+            data.get("event_type"),
+            data.get("phone_last4"),
+            data.get("reason"),
+            data.get("carrier"),
+            data.get("previous_status"),
+            data.get("page_url"),
+            data.get("timestamp", datetime.utcnow().isoformat()),
+        ))
+        conn.commit()
+        conn.close()
+        return jsonify({"status": "logged"}), 200
+    except Exception as e:
+        print(f"Logging error: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
+
+# ── GET /api/truereach/events ──────────────────────────────────────────────
+@app.route("/api/truereach/events", methods=["GET"])
+def get_events():
+    """Returns logged events for the dashboard with optional filters."""
+    try:
+        org_id     = request.args.get("org_id")
+        event_type = request.args.get("event_type")
+        limit      = int(request.args.get("limit", 500))
+
+        query  = "SELECT * FROM validation_events WHERE 1=1"
+        params = []
+
+        if org_id:
+            query += " AND org_id = ?"
+            params.append(org_id)
+        if event_type:
+            query += " AND event_type = ?"
+            params.append(event_type)
+
+        query += " ORDER BY created_at DESC LIMIT ?"
+        params.append(limit)
+
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        cursor.execute(query, params)
+        rows = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return jsonify({"events": rows, "count": len(rows)}), 200
+    except Exception as e:
+        print(f"Events fetch error: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
+
+# ── GET /api/truereach/stats ───────────────────────────────────────────────
+@app.route("/api/truereach/stats", methods=["GET"])
+def get_stats():
+    """Returns summary stats for the dashboard header cards."""
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        def count(event_type):
+            cursor.execute(
+                "SELECT COUNT(*) FROM validation_events WHERE event_type = ?",
+                (event_type,)
+            )
+            return cursor.fetchone()[0]
+
+        total    = cursor.execute("SELECT COUNT(*) FROM validation_events").fetchone()[0]
+        invalid  = count("invalid_detected")
+        valid_sms = count("valid_sms")
+        landline = count("valid_landline")
+        updated  = count("phone_updated")
+
+        cursor.execute("""
+            SELECT COUNT(*) FROM validation_events
+            WHERE event_type = 'phone_updated' AND previous_status = 'invalid'
+        """)
+        fixes    = cursor.fetchone()[0]
+        fix_rate = round((fixes / invalid * 100) if invalid > 0 else 0)
+
+        conn.close()
+        return jsonify({
+            "total":          total,
+            "invalid":        invalid,
+            "valid_sms":      valid_sms,
+            "valid_landline": landline,
+            "updated":        updated,
+            "fix_rate":       fix_rate,
+        }), 200
+    except Exception as e:
+        print(f"Stats error: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
+
+# ── Serve widget JS ────────────────────────────────────────────────────────
+@app.route("/widget/truereach-widget.js")
+def serve_widget():
+    """Serves the embeddable widget script to PMS customers."""
+    widget_dir = os.path.join(os.path.dirname(__file__), "static", "widget")
+    return send_from_directory(widget_dir, "truereach-widget.js",
+                               mimetype="application/javascript")
+
 
 @app.route('/')
 def home():
