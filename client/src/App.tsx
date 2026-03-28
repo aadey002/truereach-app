@@ -9,6 +9,7 @@ import BatchUpload from "@/pages/BatchUpload";
 import WidgetDemo from "@/pages/WidgetDemo";
 import DeveloperDocs from "@/pages/DeveloperDocs";
 import Pricing from "@/pages/Pricing";
+import PMSDemo from "@/pages/PMSDemo";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -20,6 +21,7 @@ function Router() {
       <Route path="/widget-integration">{() => <Redirect to="/developer-docs" />}</Route>
       <Route path="/developer-docs" component={DeveloperDocs} />
       <Route path="/pricing" component={Pricing} />
+      <Route path="/pms-demo" component={PMSDemo} />
       <Route component={NotFound} />
     </Switch>
   );

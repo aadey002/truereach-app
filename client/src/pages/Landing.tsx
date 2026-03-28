@@ -374,6 +374,14 @@ export default function Landing() {
           >
             See All Plans
           </Button>
+          <Button
+            size="lg"
+            variant="outline"
+            data-testid="button-pms-demo"
+            onClick={() => window.location.href = '/pms-demo'}
+          >
+            See PMS Integration Demo
+          </Button>
         </div>
       </section>
     </div>
