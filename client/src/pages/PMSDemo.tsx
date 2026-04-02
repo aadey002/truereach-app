@@ -2,15 +2,24 @@ import { useState, useEffect, useRef } from "react";
 
 // ── TrueReach Embedded Validation Engine ──────────────────────────────────
 const trueReachValidate = async (phoneNumber: string) => {
-  await new Promise((r) => setTimeout(r, 800 + Math.random() * 600));
   const digits = phoneNumber.replace(/\D/g, "");
   if (digits.length < 10 || digits.length > 11) return { status: "invalid", reason: "Incorrect digit count" };
-  const areaCode = digits.slice(-10, -7);
-  const invalidAreaCodes = ["000", "111", "123", "555"];
-  if (invalidAreaCodes.includes(areaCode)) return { status: "invalid", reason: "Invalid area code" };
-  if (digits === "0000000000" || digits === "1111111111") return { status: "invalid", reason: "Placeholder number detected" };
-  const smsCapable = parseInt(areaCode) % 2 === 0;
-  return { status: "valid", smsCapable, carrier: smsCapable ? "T-Mobile" : "Landline/VoIP" };
+  try {
+    const response = await fetch('/api/validate-realtime', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: phoneNumber, country: 'US' })
+    });
+    const data = await response.json();
+    if (!data.valid) {
+      return { status: "invalid", reason: data.warnings?.[0] || "Number could not be validated" };
+    }
+    const smsCapable = data.can_receive_sms === true;
+    const carrier = data.carrier || "Unknown";
+    return { status: "valid", smsCapable, carrier };
+  } catch (e) {
+    return { status: "invalid", reason: "Validation service unavailable" };
+  }
 };
 
 // ── Types ─────────────────────────────────────────────────────────────────
