@@ -223,6 +223,26 @@ def api_validate():
         return jsonify(pre)
     phone = pre["e164"]
 
+    # Use libphonenumber to determine number type locally
+    try:
+        parsed = phonenumbers.parse(phone, "US")
+        num_type = phonenumbers.number_type(parsed)
+    except Exception:
+        num_type = None
+
+    # Map libphonenumber types to line types
+    MOBILE_TYPES = {
+        phonenumbers.PhoneNumberType.MOBILE,
+        phonenumbers.PhoneNumberType.FIXED_LINE_OR_MOBILE,
+    }
+    LANDLINE_TYPES = {
+        phonenumbers.PhoneNumberType.FIXED_LINE,
+        phonenumbers.PhoneNumberType.TOLL_FREE,
+        phonenumbers.PhoneNumberType.PREMIUM_RATE,
+        phonenumbers.PhoneNumberType.SHARED_COST,
+        phonenumbers.PhoneNumberType.UAN,
+    }
+
     try:
         response = requests.get(
             'https://api.veriphone.io/v2/verify',
@@ -234,12 +254,36 @@ def api_validate():
             timeout=10
         )
         data = response.json()
+
+        api_type = (data.get('phone_type') or 'unknown').lower()
+        api_valid = data.get('phone_valid', False)
+
+        # Determine SMS capability: trust libphonenumber type first,
+        # fall back to Veriphone phone_type
+        if num_type in LANDLINE_TYPES:
+            is_sms = False
+            line_type = 'fixed_line'
+        elif num_type in MOBILE_TYPES:
+            is_sms = True
+            line_type = 'mobile'
+        elif api_type == 'mobile':
+            is_sms = True
+            line_type = 'mobile'
+        elif api_type in ('fixed_line', 'landline'):
+            is_sms = False
+            line_type = 'fixed_line'
+        else:
+            # VOIP or unknown — mark not SMS-capable to be safe
+            is_sms = False
+            line_type = api_type if api_type != 'unknown' else 'unknown'
+
         return jsonify({
-            'valid': data.get('phone_valid', False),
-            'phone_type': data.get('phone_type', 'unknown'),
-            'is_sms_capable': data.get('phone_type') == 'mobile',
+            'valid': api_valid,
+            'phone_type': line_type,
+            'is_sms_capable': is_sms,
+            'can_receive_sms': is_sms,
             'carrier': data.get('carrier', 'Unknown'),
-            'line_type': data.get('phone_type', 'unknown'),
+            'line_type': line_type,
             'international_number': data.get('international_number', ''),
             'local_format': data.get('local_format', ''),
             'country_code': data.get('country_code', 'US'),
