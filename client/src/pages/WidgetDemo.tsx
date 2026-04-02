@@ -47,7 +47,7 @@ export default function WidgetDemo() {
         throw new Error(data.error);
       }
       
-      data.status = data.valid ? 'valid' : 'invalid';
+      data.status = !data.valid ? 'invalid' : data.can_receive_sms ? 'valid' : 'landline';
       setResult(data);
     } catch (error) {
       console.error('Validation error:', error);
@@ -116,11 +116,13 @@ export default function WidgetDemo() {
 
           {result && (
             <div className={`p-6 rounded-lg border-2 transition-all ${
-              result.status === 'error' 
-                ? 'bg-orange-50 border-orange-400 dark:bg-orange-950/20 dark:border-orange-600' 
-                : result.valid 
-                  ? 'bg-green-50 border-green-400 dark:bg-green-950/20 dark:border-green-600' 
-                  : 'bg-red-50 border-red-400 dark:bg-red-950/20 dark:border-red-600'
+              result.status === 'error'
+                ? 'bg-orange-50 border-orange-400 dark:bg-orange-950/20 dark:border-orange-600'
+                : result.status === 'landline'
+                  ? 'bg-blue-50 border-blue-400 dark:bg-blue-950/20 dark:border-blue-600'
+                  : result.valid
+                    ? 'bg-green-50 border-green-400 dark:bg-green-950/20 dark:border-green-600'
+                    : 'bg-red-50 border-red-400 dark:bg-red-950/20 dark:border-red-600'
             }`}>
               {result.status === 'error' ? (
                 <div className="flex flex-col items-center text-center gap-3">
@@ -134,12 +136,41 @@ export default function WidgetDemo() {
                     </p>
                   </div>
                 </div>
+              ) : result.status === 'landline' ? (
+                <div className="flex flex-col items-center text-center gap-3">
+                  <Phone className="w-12 h-12 text-blue-500" />
+                  <div>
+                    <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-300">
+                      Valid — Not Textable
+                    </h3>
+                    <div className="flex flex-wrap justify-center gap-2 mt-3">
+                      <Badge variant="secondary" className="text-sm">
+                        {result.phone_type === 'fixed_line' ? 'Landline' :
+                         result.phone_type === 'voip' ? 'VoIP' :
+                         result.phone_type}
+                      </Badge>
+                      <Badge className="bg-blue-500 hover:bg-blue-600 text-sm">
+                        ☎ No SMS
+                      </Badge>
+                    </div>
+                    {result.carrier && result.carrier !== 'Unknown' && (
+                      <p className="text-muted-foreground mt-2">
+                        Carrier: {result.carrier}
+                      </p>
+                    )}
+                    {result.formatted && (
+                      <p className="text-muted-foreground text-sm mt-1">
+                        Formatted: {result.formatted}
+                      </p>
+                    )}
+                  </div>
+                </div>
               ) : result.valid ? (
                 <div className="flex flex-col items-center text-center gap-3">
                   <CheckCircle className="w-12 h-12 text-green-500" />
                   <div>
                     <h3 className="text-lg font-semibold text-green-800 dark:text-green-300">
-                      Valid Phone Number
+                      Valid & Textable
                     </h3>
                     <div className="flex flex-wrap justify-center gap-2 mt-3">
                       <Badge variant="secondary" className="text-sm">
