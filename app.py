@@ -6,6 +6,7 @@ import time
 import sqlite3
 import os
 from datetime import datetime
+import phonenumbers
 
 app = Flask(__name__)
 CORS(app)  # Allow widget requests from any PMS domain
@@ -172,6 +173,79 @@ def serve_widget():
     widget_dir = os.path.join(os.path.dirname(__file__), "static", "widget")
     return send_from_directory(widget_dir, "truereach-widget.js",
                                mimetype="application/javascript")
+
+
+def pre_validate(phone):
+    try:
+        parsed = phonenumbers.parse(phone, "US")
+
+        if not phonenumbers.is_valid_number(parsed):
+            return {"status": "invalid", "color": "red",
+                    "reason": "invalid_format", "source": "local",
+                    "carrier": None}
+
+        num_type = phonenumbers.number_type(parsed)
+
+        if num_type == phonenumbers.PhoneNumberType.TOLL_FREE:
+            return {"status": "landline", "color": "blue",
+                    "reason": "toll_free", "source": "local",
+                    "carrier": "Toll-Free"}
+
+        if num_type == phonenumbers.PhoneNumberType.PREMIUM_RATE:
+            return {"status": "invalid", "color": "red",
+                    "reason": "premium_rate", "source": "local",
+                    "carrier": None}
+
+        if num_type == phonenumbers.PhoneNumberType.VOICEMAIL:
+            return {"status": "invalid", "color": "red",
+                    "reason": "voicemail_number", "source": "local",
+                    "carrier": None}
+
+        e164 = phonenumbers.format_number(
+            parsed, phonenumbers.PhoneNumberFormat.E164
+        )
+        return {"pass": True, "e164": e164}
+
+    except phonenumbers.NumberParseException:
+        return {"status": "invalid", "color": "red",
+                "reason": "parse_error", "source": "local",
+                "carrier": None}
+
+
+@app.route('/api/validate', methods=['GET'])
+def api_validate():
+    phone = request.args.get('phone', '')
+    if not phone:
+        return jsonify({"error": "Phone number required"}), 400
+
+    pre = pre_validate(phone)
+    if "pass" not in pre:
+        return jsonify(pre)
+    phone = pre["e164"]
+
+    try:
+        response = requests.get(
+            'https://api.veriphone.io/v2/verify',
+            params={
+                'phone': phone,
+                'key': VERIPHONE_API_KEY,
+                'default_country': 'US'
+            },
+            timeout=10
+        )
+        data = response.json()
+        return jsonify({
+            'valid': data.get('phone_valid', False),
+            'phone_type': data.get('phone_type', 'unknown'),
+            'is_sms_capable': data.get('phone_type') == 'mobile',
+            'carrier': data.get('carrier', 'Unknown'),
+            'line_type': data.get('phone_type', 'unknown'),
+            'international_number': data.get('international_number', ''),
+            'local_format': data.get('local_format', ''),
+            'country_code': data.get('country_code', 'US'),
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route('/')
