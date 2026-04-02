@@ -11,8 +11,8 @@ import phonenumbers
 app = Flask(__name__)
 CORS(app)  # Allow widget requests from any PMS domain
 
-# Your Veriphone API Key
-VERIPHONE_API_KEY = "D1D21F3D6FB74E909A0045FB3CA33F1A"
+# Veriphone API Key — loaded from environment variable
+VERIPHONE_API_KEY = os.environ.get("VERIPHONE_API_KEY", "")
 
 # Store validation progress
 validation_progress = {
