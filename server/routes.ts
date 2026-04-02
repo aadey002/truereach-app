@@ -146,11 +146,12 @@ async function validatePhoneNumber(phone: string, apiKey: string): Promise<{
       }
     }
 
+    const batchPhoneType = (data.phone_type || 'unknown').toLowerCase();
     return {
       phone,
       valid: isValid,
-      phone_type: data.phone_type || 'unknown',
-      can_receive_sms: (data.phone_type || '').toLowerCase() === 'mobile',
+      phone_type: batchPhoneType,
+      can_receive_sms: isValid && batchPhoneType === 'mobile',
       carrier: data.carrier || 'Unknown',
       suggestions
     };
@@ -386,10 +387,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isValid = true;
       }
       
+      // Determine SMS capability — conservative: only 'mobile' is textable,
+      // 'fixed_line_or_mobile' and everything else is NOT textable
+      const apiPhoneType = (data.phone_type || 'unknown').toLowerCase();
+      const canReceiveSms = isValid && apiPhoneType === 'mobile';
+
       const result = {
         valid: isValid,
-        phone_type: data.phone_type || 'unknown',
-        can_receive_sms: (data.phone_type || '').toLowerCase() === 'mobile',
+        phone_type: apiPhoneType,
+        can_receive_sms: canReceiveSms,
         carrier: data.carrier || 'Unknown',
         formatted: data.international_number || phone,
         local_format: data.local_format || '',
