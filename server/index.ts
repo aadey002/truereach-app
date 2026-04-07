@@ -11,8 +11,22 @@ app.set('trust proxy', 1);
 const isProduction = app.get("env") === "production";
 
 app.use(helmet({
-  contentSecurityPolicy: false,
-  crossOriginEmbedderPolicy: false
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://www.paypal.com", "https://www.sandbox.paypal.com", "https://fonts.googleapis.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "blob:"],
+      connectSrc: ["'self'", "https://api.veriphone.io", "https://api.web3forms.com", "https://flask-data-viz-aadey002.replit.app"],
+      frameSrc: ["'self'", "https://www.paypal.com", "https://www.sandbox.paypal.com"],
+    },
+  },
+  crossOriginEmbedderPolicy: false,
+  strictTransportSecurity: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+  },
 }));
 
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
@@ -21,8 +35,6 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
   'https://true-reach.app',
   'https://www.true-reach.app'
 ];
-
-const PUBLIC_CORS_PATHS = ['/api/validate-realtime'];
 
 const corsMiddleware = cors({
   origin: (origin, callback) => {
@@ -36,15 +48,10 @@ const corsMiddleware = cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key']
 });
 
-app.use((req: Request, res: Response, next: NextFunction) => {
-  if (PUBLIC_CORS_PATHS.some(p => req.path.startsWith(p))) {
-    return next();
-  }
-  corsMiddleware(req, res, next);
-});
+app.use(corsMiddleware);
 
 app.use(compression());
 

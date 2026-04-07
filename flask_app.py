@@ -6,7 +6,9 @@ import os
 
 app = Flask(__name__)
 
-VERIPHONE_API_KEY = os.getenv('VERIPHONE_API_KEY', 'D1D21F3D6FB74E909A0045FB3CA33F1A')
+VERIPHONE_API_KEY = os.environ.get('VERIPHONE_API_KEY')
+if not VERIPHONE_API_KEY:
+    raise RuntimeError("VERIPHONE_API_KEY environment variable is required")
 
 validation_progress = {
     'current': 0,
@@ -239,13 +241,18 @@ def home():
             html += '<th style="padding:12px; text-align:left;">Carrier</th>';
             html += '</tr>';
             
+            function esc(str) {
+                var d = document.createElement('div');
+                d.textContent = str;
+                return d.innerHTML;
+            }
             results.details.forEach(r => {
                 html += '<tr style="border-bottom: 1px solid #e2e8f0;">';
-                html += `<td style="padding:12px;">${r.phone}</td>`;
-                html += `<td style="padding:12px;">${r.valid ? '✅' : '❌'}</td>`;
-                html += `<td style="padding:12px;">${r.phone_type}</td>`;
-                html += `<td style="padding:12px;">${r.can_receive_sms ? '✅' : '❌'}</td>`;
-                html += `<td style="padding:12px;">${r.carrier}</td>`;
+                html += '<td style="padding:12px;">' + esc(String(r.phone)) + '</td>';
+                html += '<td style="padding:12px;">' + (r.valid ? '✅' : '❌') + '</td>';
+                html += '<td style="padding:12px;">' + esc(String(r.phone_type)) + '</td>';
+                html += '<td style="padding:12px;">' + (r.can_receive_sms ? '✅' : '❌') + '</td>';
+                html += '<td style="padding:12px;">' + esc(String(r.carrier)) + '</td>';
                 html += '</tr>';
             });
             html += '</table>';
@@ -317,7 +324,8 @@ def validate():
                 
                 validation_progress['current'] = i + 1
                 time.sleep(0.3)
-            except:
+            except Exception as e:
+                print(f"Validation error for {phone}: {e}")
                 results.append({
                     'phone': phone,
                     'valid': False,

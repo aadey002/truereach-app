@@ -11,6 +11,10 @@ import { setupAuth, registerAuthRoutes } from "./replit_integrations/auth";
 
 let apiLimiter: RateLimiterPostgres | RateLimiterMemory;
 let strictLimiter: RateLimiterPostgres | RateLimiterMemory;
+let orgDailyLimiter: RateLimiterPostgres | RateLimiterMemory;
+
+// Per-org daily validation cap (default 10,000 validations/day)
+const ORG_DAILY_LIMIT = parseInt(process.env.ORG_DAILY_VALIDATION_LIMIT || '10000');
 
 if (process.env.DATABASE_URL) {
   const rateLimitPool = new pg.Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
@@ -29,6 +33,13 @@ if (process.env.DATABASE_URL) {
     duration: 60,
   });
 
+  orgDailyLimiter = new RateLimiterPostgres({
+    storeClient: rateLimitPool,
+    tableName: 'rate_limit_org_daily',
+    points: ORG_DAILY_LIMIT,
+    duration: 86400, // 24 hours
+  });
+
   apiLimiter = apiLimiterReady;
   strictLimiter = strictLimiterReady;
 } else {
@@ -41,14 +52,14 @@ if (process.env.DATABASE_URL) {
     points: 10,
     duration: 60,
   });
+
+  orgDailyLimiter = new RateLimiterMemory({
+    points: ORG_DAILY_LIMIT,
+    duration: 86400,
+  });
 }
-// CRITICAL: Fix for getting client IP behind proxies (rateLimiter Flexible needs this)
+// Use req.ip which respects the 'trust proxy' setting and cannot be spoofed
 function getClientIp(req: any): string {
-  const xff = req.headers['x-forwarded-for'];
-  if (xff) {
-    const firstIp = (typeof xff === 'string' ? xff : xff[0]).split(',')[0].trim();
-    if (firstIp) return firstIp;
-  }
   return req.ip || req.socket?.remoteAddress || 'unknown';
 }
 
@@ -75,6 +86,8 @@ interface VeriphoneResponse {
   country_code?: string;
 }
 
+const VERIPHONE_TIMEOUT_MS = 10_000;
+
 async function validatePhoneNumber(phone: string, apiKey: string): Promise<{
   phone: string;
   valid: boolean;
@@ -84,15 +97,19 @@ async function validatePhoneNumber(phone: string, apiKey: string): Promise<{
   suggestions?: PhoneSuggestion[];
 }> {
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), VERIPHONE_TIMEOUT_MS);
     const response = await fetch(
       `https://api.veriphone.io/v2/verify?phone=${encodeURIComponent(phone)}&key=${apiKey}&default_country=US`,
-      { 
+      {
         method: 'GET',
         headers: {
           'Accept': 'application/json'
-        }
+        },
+        signal: controller.signal
       }
     );
+    clearTimeout(timeout);
 
     if (!response.ok) {
       throw new Error(`API request failed: ${response.status}`);
@@ -157,14 +174,20 @@ async function validatePhoneNumber(phone: string, apiKey: string): Promise<{
     };
   } catch (error) {
     console.error(`Error validating phone ${phone}:`, error);
+    // Fallback: use NANP-only validation when Veriphone is unavailable
+    let digits = phone.replace(/\D/g, '');
+    while (digits.length > 10 && digits.startsWith('1')) {
+      digits = digits.slice(1);
+    }
+    const isNANPValid = digits.length === 10 && isValidNANPFormat(digits);
     const suggestions = analyzeInvalidPhone(phone);
     return {
       phone,
-      valid: false,
-      phone_type: 'error',
+      valid: isNANPValid,
+      phone_type: isNANPValid ? 'unknown' : 'error',
       can_receive_sms: false,
-      carrier: 'Error',
-      suggestions
+      carrier: isNANPValid ? 'Unknown (offline validation)' : 'Error',
+      suggestions: isNANPValid ? undefined : suggestions
     };
   }
 }
@@ -269,6 +292,25 @@ function parsePatientData(fileBuffer: Buffer, filename: string): PatientData[] {
   return patients;
 }
 
+// Auth middleware: requires either a valid session or X-API-Key header
+function requireApiAuth(req: any, res: any, next: any) {
+  // Allow authenticated sessions (Replit Auth)
+  if (req.isAuthenticated && req.isAuthenticated()) {
+    return next();
+  }
+  // Allow valid API key header
+  const apiKeyHeader = req.headers['x-api-key'];
+  const validApiKeys = (process.env.TRUEREACH_API_KEYS || '').split(',').filter(Boolean);
+  if (apiKeyHeader && validApiKeys.includes(apiKeyHeader)) {
+    return next();
+  }
+  // In development, allow unauthenticated access for testing
+  if (process.env.NODE_ENV !== 'production') {
+    return next();
+  }
+  return res.status(401).json({ error: 'Authentication required. Provide a session or X-API-Key header.' });
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup Replit Auth BEFORE other routes
   await setupAuth(app);
@@ -315,25 +357,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   }
 
-  // Enable CORS for widget integration
+  // CORS for widget integration — use allowed origins, not wildcard
   app.use('/api/validate-realtime', (req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
+    const origin = req.headers.origin;
+    const widgetOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').filter(Boolean);
+    const defaults = ['http://localhost:5000', 'http://localhost:3000', 'https://true-reach.app', 'https://www.true-reach.app'];
+    const allowed = Array.from(new Set(defaults.concat(widgetOrigins)));
+    if (origin && allowed.includes(origin)) {
+      res.header('Access-Control-Allow-Origin', origin);
+    }
     res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-API-Key');
+
     if (req.method === 'OPTIONS') {
       return res.sendStatus(200);
     }
-    
+
     next();
   });
 
   // Real-time validation endpoint for single phone numbers
-  app.post('/api/validate-realtime', async (req, res) => {
+  app.post('/api/validate-realtime', requireApiAuth, async (req, res) => {
     try {
       await apiLimiter.consume(getClientIp(req));
 
-      const { phone, country = 'US' } = req.body;
+      const { phone, country = 'US', org_id } = req.body;
+
+      // Per-org daily validation cap
+      if (org_id) {
+        try {
+          await orgDailyLimiter.consume('org:' + org_id);
+        } catch (orgErr: any) {
+          if (orgErr?.msBeforeNext !== undefined) {
+            return res.status(429).json({ error: 'Organization daily validation limit reached', valid: false });
+          }
+        }
+      }
 
       if (!phone) {
         return res.status(400).json({ error: 'Phone number required' });
@@ -344,24 +403,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ error: 'API key not configured' });
       }
 
-      const response = await fetch(
-        `https://api.veriphone.io/v2/verify?phone=${encodeURIComponent(phone)}&key=${apiKey}&default_country=${country}`,
-        { 
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json'
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), VERIPHONE_TIMEOUT_MS);
+      let data: VeriphoneResponse;
+      try {
+        const response = await fetch(
+          `https://api.veriphone.io/v2/verify?phone=${encodeURIComponent(phone)}&key=${apiKey}&default_country=${country}`,
+          {
+            method: 'GET',
+            headers: {
+              'Accept': 'application/json'
+            },
+            signal: controller.signal
           }
-        }
-      );
+        );
+        clearTimeout(timeout);
 
-      if (!response.ok) {
-        if (response.status === 402) {
-          throw new Error('API quota exceeded - please check your Veriphone API plan');
+        if (!response.ok) {
+          if (response.status === 402) {
+            throw new Error('API quota exceeded - please check your Veriphone API plan');
+          }
+          throw new Error(`API request failed: ${response.status}`);
         }
-        throw new Error(`API request failed: ${response.status}`);
+
+        data = await response.json();
+      } catch (fetchError) {
+        clearTimeout(timeout);
+        // Fallback: NANP-only validation when Veriphone is unavailable
+        let fallbackDigits = phone.replace(/\D/g, '');
+        while (fallbackDigits.length > 10 && fallbackDigits.startsWith('1')) {
+          fallbackDigits = fallbackDigits.slice(1);
+        }
+        const nanpValid = fallbackDigits.length === 10 && isValidNANPFormat(fallbackDigits);
+        const suggestions = nanpValid ? undefined : analyzeInvalidPhone(phone);
+        return res.json({
+          valid: nanpValid,
+          phone_type: nanpValid ? 'unknown' : 'error',
+          can_receive_sms: false,
+          carrier: nanpValid ? 'Unknown (offline validation)' : 'Error',
+          formatted: phone,
+          local_format: '',
+          country,
+          warnings: [nanpValid ? 'Validated offline — carrier info unavailable' : 'Invalid phone number'],
+          suggestions
+        });
       }
-
-      const data: VeriphoneResponse = await response.json();
 
       // CRITICAL: Apply NANP validation with proper digit normalization
       let digits = phone.replace(/\D/g, '');
@@ -446,7 +532,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/validate', upload.single('file'), async (req, res) => {
+  app.post('/api/validate', requireApiAuth, upload.single('file'), async (req, res) => {
     try {
       await strictLimiter.consume(getClientIp(req));
 
@@ -524,7 +610,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Use URLSearchParams (form-urlencoded) format which Web3Forms accepts better
       const formData = new URLSearchParams();
-      formData.append('access_key', '2603658f-9610-45e5-8d3c-0ae67ef63013');
+      const web3formsKey = process.env.WEB3FORMS_ACCESS_KEY;
+      if (!web3formsKey) {
+        return res.status(500).json({ success: false, message: 'Contact form not configured' });
+      }
+      formData.append('access_key', web3formsKey);
       formData.append('name', name);
       formData.append('email', email);
       formData.append('organization', organization || 'Not provided');

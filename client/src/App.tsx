@@ -24,7 +24,7 @@ function Router() {
       <Route path="/developer-docs">{() => <AccessCodeGate><DeveloperDocs /></AccessCodeGate>}</Route>
       <Route path="/pricing" component={Pricing} />
       <Route path="/pms-demo" component={PMSDemo} />
-      <Route path="/dashboard" component={TrueReachDashboard} />
+      <Route path="/dashboard">{() => <AccessCodeGate><TrueReachDashboard /></AccessCodeGate>}</Route>
       <Route component={NotFound} />
     </Switch>
   );

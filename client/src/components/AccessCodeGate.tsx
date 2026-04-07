@@ -1,24 +1,39 @@
 import { useState, useEffect } from "react";
 
-const CORRECT_CODE = "Tee@thc1";
-const SESSION_KEY  = "truereach_dev_access";
+const SESSION_KEY = "truereach_dev_access";
 
 export default function AccessCodeGate({ children }: { children: React.ReactNode }) {
   const [input, setInput]       = useState("");
   const [error, setError]       = useState(false);
+  const [loading, setLoading]   = useState(false);
   const [unlocked, setUnlocked] = useState(false);
 
   useEffect(() => {
     if (sessionStorage.getItem(SESSION_KEY) === "granted") setUnlocked(true);
   }, []);
 
-  const handleSubmit = () => {
-    if (input === CORRECT_CODE) {
-      sessionStorage.setItem(SESSION_KEY, "granted");
-      setUnlocked(true);
-    } else {
+  const handleSubmit = async () => {
+    setLoading(true);
+    setError(false);
+    try {
+      const res = await fetch("/api/verify-dev-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: input }),
+      });
+      const data = await res.json();
+      if (data.valid) {
+        sessionStorage.setItem(SESSION_KEY, "granted");
+        setUnlocked(true);
+      } else {
+        setError(true);
+        setTimeout(() => setError(false), 3000);
+      }
+    } catch {
       setError(true);
       setTimeout(() => setError(false), 3000);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -36,14 +51,16 @@ export default function AccessCodeGate({ children }: { children: React.ReactNode
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === "Enter" && handleSubmit()}
           placeholder="Enter access code"
-          style={{ width: "100%", padding: "11px 14px", border: `2px solid ${error ? "#ef4444" : "#e5e7eb"}`, borderRadius: 8, fontSize: 14, outline: "none", marginBottom: 12, fontFamily: "inherit", transition: "border-color 0.2s", color: "#111827" }}
+          disabled={loading}
+          style={{ width: "100%", padding: "11px 14px", border: "2px solid " + (error ? "#ef4444" : "#e5e7eb"), borderRadius: 8, fontSize: 14, outline: "none", marginBottom: 12, fontFamily: "inherit", transition: "border-color 0.2s", color: "#111827" }}
         />
-        {error && <p style={{ color: "#ef4444", fontSize: 13, margin: "0 0 12px" }}>⚠ Incorrect access code. Please try again.</p>}
+        {error && <p style={{ color: "#ef4444", fontSize: 13, margin: "0 0 12px" }}>Incorrect access code. Please try again.</p>}
         <button
           onClick={handleSubmit}
-          style={{ width: "100%", background: "linear-gradient(135deg,#7c3aed,#4f46e5)", border: "none", borderRadius: 8, color: "#fff", fontWeight: 700, fontSize: 15, padding: "12px", cursor: "pointer" }}
+          disabled={loading}
+          style={{ width: "100%", background: "linear-gradient(135deg,#7c3aed,#4f46e5)", border: "none", borderRadius: 8, color: "#fff", fontWeight: 700, fontSize: 15, padding: "12px", cursor: loading ? "wait" : "pointer", opacity: loading ? 0.7 : 1 }}
         >
-          Unlock Documentation →
+          {loading ? "Verifying..." : "Unlock Documentation →"}
         </button>
         <p style={{ color: "#d1d5db", fontSize: 12, marginTop: 20 }}>Contact TrueReach to request access</p>
       </div>

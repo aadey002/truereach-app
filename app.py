@@ -5,14 +5,20 @@ import pandas as pd
 import time
 import sqlite3
 import os
+import logging
 from datetime import datetime
 import phonenumbers
 
+logger = logging.getLogger(__name__)
+
 app = Flask(__name__)
+app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10MB upload limit
 CORS(app)  # Allow widget requests from any PMS domain
 
-# Veriphone API Key — loaded from environment variable
-VERIPHONE_API_KEY = os.environ.get("VERIPHONE_API_KEY", "")
+# Veriphone API Key — must be set via environment variable
+VERIPHONE_API_KEY = os.environ.get("VERIPHONE_API_KEY")
+if not VERIPHONE_API_KEY:
+    raise RuntimeError("VERIPHONE_API_KEY environment variable is required")
 
 # Store validation progress
 validation_progress = {
@@ -47,7 +53,7 @@ def init_db():
     """)
     conn.commit()
     conn.close()
-    print("TrueReach DB initialized")
+    logger.info("TrueReach DB initialized")
 
 init_db()
 
@@ -86,7 +92,7 @@ def log_event():
         conn.close()
         return jsonify({"status": "logged"}), 200
     except Exception as e:
-        print(f"Logging error: {e}")
+        logger.error("Logging error: %s", e)
         return jsonify({"error": "Internal server error"}), 500
 
 
@@ -120,7 +126,7 @@ def get_events():
         conn.close()
         return jsonify({"events": rows, "count": len(rows)}), 200
     except Exception as e:
-        print(f"Events fetch error: {e}")
+        logger.error("Events fetch error: %s", e)
         return jsonify({"error": "Internal server error"}), 500
 
 
@@ -162,7 +168,7 @@ def get_stats():
             "fix_rate":       fix_rate,
         }), 200
     except Exception as e:
-        print(f"Stats error: {e}")
+        logger.error("Stats error: %s", e)
         return jsonify({"error": "Internal server error"}), 500
 
 
