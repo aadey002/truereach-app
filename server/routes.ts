@@ -257,6 +257,8 @@ async function validatePhoneNumber(phone: string, apiKey: string): Promise<{
         if (twilio.line_type === 'mobile' || twilio.line_type === 'fixedvoip') {
           finalPhoneType = 'mobile';
           canSms = true;
+        } else if (twilio.line_type === 'nonfixedvoip') {
+          finalPhoneType = 'voip';
         }
         // landline stays as fixed_line
       }
@@ -588,6 +590,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (twilio.line_type === 'mobile' || twilio.line_type === 'fixedvoip') {
             correctedPhoneType = 'mobile';
             canReceiveSms = true;
+          } else if (twilio.line_type === 'nonfixedvoip') {
+            correctedPhoneType = 'voip';
           }
           // landline stays as fixed_line
         }
