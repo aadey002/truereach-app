@@ -304,6 +304,13 @@ function requireApiAuth(req: any, res: any, next: any) {
   if (apiKeyHeader && validApiKeys.includes(apiKeyHeader)) {
     return next();
   }
+  // Allow same-origin requests (app's own pages: demos, widget demo, etc.)
+  const origin = req.headers.origin;
+  const referer = req.headers.referer || '';
+  const appHosts = ['https://true-reach.app', 'https://www.true-reach.app'];
+  if (!origin || appHosts.includes(origin) || appHosts.some((h: string) => referer.startsWith(h))) {
+    return next();
+  }
   // In development, allow unauthenticated access for testing
   if (process.env.NODE_ENV !== 'production') {
     return next();
