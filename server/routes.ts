@@ -13,6 +13,23 @@ let apiLimiter: RateLimiterPostgres | RateLimiterMemory;
 let strictLimiter: RateLimiterPostgres | RateLimiterMemory;
 let orgDailyLimiter: RateLimiterPostgres | RateLimiterMemory;
 
+// Known mobile/MVNO carriers that Veriphone often misclassifies as fixed_line
+const KNOWN_MOBILE_CARRIERS = [
+  'simple mobile', 'boost mobile', 'cricket', 'cricket wireless',
+  'metro', 'metro by t-mobile', 'metropcs', 'mint mobile',
+  'visible', 'google fi', 'ting', 'us mobile', 'republic wireless',
+  'consumer cellular', 'tracfone', 'straight talk', 'total wireless',
+  'net10', 'h2o wireless', 'lycamobile', 'ultra mobile',
+  'red pocket', 'gen mobile', 'good2go', 'twigby',
+  'wing', 'reach mobile', 'tello', 'ting mobile',
+];
+
+// Check if carrier name matches a known mobile carrier
+function isKnownMobileCarrier(carrier: string): boolean {
+  const lower = carrier.toLowerCase().trim();
+  return KNOWN_MOBILE_CARRIERS.some(c => lower.includes(c));
+}
+
 // Per-org daily validation cap (default 10,000 validations/day)
 const ORG_DAILY_LIMIT = parseInt(process.env.ORG_DAILY_VALIDATION_LIMIT || '10000');
 
@@ -164,12 +181,15 @@ async function validatePhoneNumber(phone: string, apiKey: string): Promise<{
     }
 
     const batchPhoneType = (data.phone_type || 'unknown').toLowerCase();
+    const batchCarrier = data.carrier || 'Unknown';
+    const batchIsMobile = isKnownMobileCarrier(batchCarrier);
+    const batchCorrectedType = (batchIsMobile && batchPhoneType !== 'mobile') ? 'mobile' : batchPhoneType;
     return {
       phone,
       valid: isValid,
-      phone_type: batchPhoneType,
-      can_receive_sms: isValid && batchPhoneType === 'mobile',
-      carrier: data.carrier || 'Unknown',
+      phone_type: batchCorrectedType,
+      can_receive_sms: isValid && (batchPhoneType === 'mobile' || batchIsMobile),
+      carrier: batchCarrier,
       suggestions
     };
   } catch (error) {
@@ -473,16 +493,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isValid = true;
       }
       
-      // Determine SMS capability — conservative: only 'mobile' is textable,
-      // 'fixed_line_or_mobile' and everything else is NOT textable
+      // Determine SMS capability — 'mobile' is textable, plus known mobile
+      // carriers that Veriphone misclassifies as fixed_line (MVNOs like Boost, Simple Mobile, etc.)
       const apiPhoneType = (data.phone_type || 'unknown').toLowerCase();
-      const canReceiveSms = isValid && apiPhoneType === 'mobile';
+      const carrierName = data.carrier || 'Unknown';
+      const isMobileByCarrier = isKnownMobileCarrier(carrierName);
+      const canReceiveSms = isValid && (apiPhoneType === 'mobile' || isMobileByCarrier);
+
+      // Correct the phone_type if carrier override detected a mobile MVNO
+      const correctedPhoneType = (isMobileByCarrier && apiPhoneType !== 'mobile') ? 'mobile' : apiPhoneType;
 
       const result = {
         valid: isValid,
-        phone_type: apiPhoneType,
+        phone_type: correctedPhoneType,
         can_receive_sms: canReceiveSms,
-        carrier: data.carrier || 'Unknown',
+        carrier: carrierName,
         formatted: data.international_number || phone,
         local_format: data.local_format || '',
         country: data.country_code || country,
