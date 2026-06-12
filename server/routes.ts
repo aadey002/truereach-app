@@ -254,7 +254,7 @@ async function validatePhoneNumber(phone: string, apiKey: string): Promise<{
     if (isValid && finalPhoneType === 'fixed_line') {
       const twilio = await twilioLookup(phone);
       if (twilio) {
-        if (twilio.line_type === 'mobile' || twilio.line_type === 'fixedvoip' || twilio.line_type === 'nonfixedvoip') {
+        if (twilio.line_type === 'mobile' || twilio.line_type === 'fixedvoip') {
           finalPhoneType = 'mobile';
           canSms = true;
         }
@@ -585,7 +585,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isValid && correctedPhoneType === 'fixed_line') {
         const twilio = await twilioLookup(phone);
         if (twilio) {
-          if (twilio.line_type === 'mobile' || twilio.line_type === 'fixedvoip' || twilio.line_type === 'nonfixedvoip') {
+          if (twilio.line_type === 'mobile' || twilio.line_type === 'fixedvoip') {
             correctedPhoneType = 'mobile';
             canReceiveSms = true;
           }
