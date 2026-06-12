@@ -131,7 +131,7 @@ async function twilioLookup(phone: string): Promise<TwilioLookupResult | null> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), TWILIO_TIMEOUT_MS);
 
-    const credentials = Buffer.from(accountSid + ':' + authToken).toString('base64');
+    const credentials = Buffer.from(accountSid.trim() + ':' + authToken.trim()).toString('base64');
     const url = 'https://lookups.twilio.com/v2/PhoneNumbers/' + e164 + '?Fields=line_type_intelligence';
     console.log('[Twilio] Looking up:', url);
 
@@ -644,6 +644,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         error: error instanceof Error ? error.message : 'Validation failed',
         valid: false
       });
+    }
+  });
+
+  // Temporary debug endpoint — remove after Twilio is confirmed working
+  app.get('/api/debug-twilio', async (req, res) => {
+    const phone = (req.query.phone as string) || '7708829000';
+    const sid = process.env.TWILIO_ACCOUNT_SID;
+    const token = process.env.TWILIO_AUTH_TOKEN;
+    if (!sid || !token) {
+      return res.json({ error: 'Missing Twilio credentials', sid_set: !!sid, token_set: !!token });
+    }
+    try {
+      let digits = phone.replace(/\D/g, '');
+      while (digits.length > 10 && digits.startsWith('1')) digits = digits.slice(1);
+      const credentials = Buffer.from(sid.trim() + ':' + token.trim()).toString('base64');
+      const url = 'https://lookups.twilio.com/v2/PhoneNumbers/%2B1' + digits + '?Fields=line_type_intelligence';
+      const response = await fetch(url, {
+        headers: { 'Accept': 'application/json', 'Authorization': 'Basic ' + credentials }
+      });
+      const data = await response.json();
+      res.json({ status: response.status, twilio_response: data });
+    } catch (err: any) {
+      res.json({ error: err.message });
     }
   });
 
