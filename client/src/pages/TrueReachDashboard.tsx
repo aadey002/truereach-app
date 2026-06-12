@@ -169,7 +169,7 @@ export default function TrueReachDashboard() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 24 }}>
           <StatCard loading={loading} label="Invalid Flagged"   value={stats?.invalid ?? 0}        sub="Numbers flagged"       color="#ef4444" icon="🚩" />
           <StatCard loading={loading} label="Valid & SMS-ready" value={stats?.valid_sms ?? 0}      sub="SMS reminders enabled" color="#7c3aed" icon="📱" />
-          <StatCard loading={loading} label="Landline Only"     value={stats?.valid_landline ?? 0} sub="Voice calls only"      color="#3b82f6" icon="☎️" />
+          <StatCard loading={loading} label="Non-Mobile"        value={stats?.valid_landline ?? 0} sub="Verify SMS capability"  color="#3b82f6" icon="☎️" />
           <StatCard loading={loading} label="Corrections Made"  value={stats?.updated ?? 0}        sub={`${stats?.fix_rate ?? 0}% fix rate`} color="#16a34a" icon="✏️" />
         </div>
 

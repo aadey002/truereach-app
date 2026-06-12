@@ -141,7 +141,7 @@ export default function WidgetDemo() {
                   <Phone className="w-12 h-12 text-blue-500" />
                   <div>
                     <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-300">
-                      Valid — Not Textable
+                      Valid — Non-Mobile · Verify SMS
                     </h3>
                     <div className="flex flex-wrap justify-center gap-2 mt-3">
                       <Badge variant="secondary" className="text-sm">

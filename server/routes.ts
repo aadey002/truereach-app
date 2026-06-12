@@ -538,9 +538,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           result.suggestions = standardSuggestions;
         }
       } else if (result.phone_type === 'fixed_line') {
-        result.warnings.push('Landline - cannot receive SMS');
+        result.warnings.push('Non-mobile — SMS delivery not guaranteed');
       } else if (result.phone_type === 'voip') {
-        result.warnings.push('VOIP number - SMS delivery may be unreliable');
+        result.warnings.push('Non-mobile (VoIP) — SMS delivery not guaranteed');
       }
 
       res.json(result);

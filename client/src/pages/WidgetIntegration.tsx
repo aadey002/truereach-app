@@ -150,8 +150,8 @@ export default function WidgetIntegration() {
     PhoneValidatorWidget.attach('#patient-phone', {
       onValidate: function(result) {
         if (result.valid && !result.canReceiveSms) {
-          alert('Warning: This is a ' + result.phoneType + 
-                ' and cannot receive SMS appointment reminders.');
+          alert('Warning: This is a non-mobile number (' + result.phoneType +
+                '). SMS delivery is not guaranteed — verify SMS capability.');
         }
       }
     });

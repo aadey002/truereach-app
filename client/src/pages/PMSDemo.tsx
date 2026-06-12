@@ -36,7 +36,7 @@ const STATUS: Record<ValidationStatus, StatusConfig> = {
   idle:     { border: "hsl(var(--border))", glow: "none",                           badge: null, label: "" },
   checking: { border: "hsl(var(--muted-foreground))", glow: "none",                           badge: "⟳",  label: "Validating…" },
   valid:    { border: "#22c55e", glow: "0 0 0 3px rgba(34,197,94,.25)",  badge: "✓",  label: "Valid & Textable" },
-  landline: { border: "#3b82f6", glow: "0 0 0 3px rgba(59,130,246,.25)", badge: "☎",  label: "Valid — Not Textable" },
+  landline: { border: "#3b82f6", glow: "0 0 0 3px rgba(59,130,246,.25)", badge: "☎",  label: "Valid — Non-Mobile · Verify SMS" },
   invalid:  { border: "#ef4444", glow: "0 0 0 3px rgba(239,68,68,.25)",  badge: "✕",  label: "Invalid Number" },
 };
 
@@ -118,7 +118,7 @@ function Legend() {
     <div className="flex gap-4 flex-wrap bg-card rounded-[10px] px-4 py-2.5 border border-border mb-5">
       {[
         { color: "#22c55e", label: "Valid & SMS-capable" },
-        { color: "#3b82f6", label: "Valid – Landline/VoIP only" },
+        { color: "#3b82f6", label: "Valid – Non-Mobile · Verify SMS" },
         { color: "#ef4444", label: "Invalid / Undeliverable" },
       ].map(({ color, label }) => (
         <div key={label} className="flex items-center gap-2">
@@ -179,7 +179,7 @@ export default function PMSDemo() {
       const s: ValidationStatus = result.smsCapable ? "valid" : "landline";
       setStatus(s);
       setMeta({ carrier: result.carrier });
-      addLog(`${fieldLabel} — ${result.smsCapable ? "✓ SMS-capable" : "☎ Landline/VoIP"} (${result.carrier})`, result.smsCapable ? "success" : "info");
+      addLog(`${fieldLabel} — ${result.smsCapable ? "✓ SMS-capable" : "☎ Non-Mobile · Verify SMS"} (${result.carrier})`, result.smsCapable ? "success" : "info");
     } else {
       setStatus("invalid");
       setMeta({ reason: result.reason });
@@ -347,7 +347,7 @@ export default function PMSDemo() {
               <p className="text-muted-foreground text-[11px] font-bold uppercase tracking-widest mb-2.5">Border Status Key</p>
               {[
                 { color: "#22c55e", icon: "✓", label: "Green", desc: "Valid & textable" },
-                { color: "#3b82f6", icon: "☎", label: "Blue",  desc: "Valid, landline only" },
+                { color: "#3b82f6", icon: "☎", label: "Blue",  desc: "Valid, non-mobile · verify SMS" },
                 { color: "#ef4444", icon: "✕", label: "Red",   desc: "Invalid / flagged" },
               ].map(({ color, icon, label, desc }) => (
                 <div key={label} className="flex items-center gap-2.5 mb-2">
