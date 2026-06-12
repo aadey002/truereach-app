@@ -115,7 +115,10 @@ interface TwilioLookupResult {
 async function twilioLookup(phone: string): Promise<TwilioLookupResult | null> {
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;
-  if (!accountSid || !authToken) return null;
+  if (!accountSid || !authToken) {
+    console.log('[Twilio] Missing credentials — ACCOUNT_SID:', !!accountSid, 'AUTH_TOKEN:', !!authToken);
+    return null;
+  }
 
   try {
     // Normalize to E.164
@@ -123,36 +126,45 @@ async function twilioLookup(phone: string): Promise<TwilioLookupResult | null> {
     while (digits.length > 10 && digits.startsWith('1')) {
       digits = digits.slice(1);
     }
-    const e164 = '+1' + digits;
+    const e164 = '%2B1' + digits;
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), TWILIO_TIMEOUT_MS);
 
     const credentials = Buffer.from(accountSid + ':' + authToken).toString('base64');
-    const response = await fetch(
-      'https://lookups.twilio.com/v2/PhoneNumbers/' + encodeURIComponent(e164) + '?Fields=line_type_intelligence',
-      {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Basic ' + credentials
-        },
-        signal: controller.signal
-      }
-    );
+    const url = 'https://lookups.twilio.com/v2/PhoneNumbers/' + e164 + '?Fields=line_type_intelligence';
+    console.log('[Twilio] Looking up:', url);
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Basic ' + credentials
+      },
+      signal: controller.signal
+    });
     clearTimeout(timeout);
 
-    if (!response.ok) return null;
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error('[Twilio] HTTP', response.status, errorBody);
+      return null;
+    }
 
     const data = await response.json();
     const lti = data.line_type_intelligence;
-    if (!lti) return null;
+    if (!lti) {
+      console.error('[Twilio] No line_type_intelligence in response:', JSON.stringify(data));
+      return null;
+    }
 
+    console.log('[Twilio] Result:', lti.type, '- carrier:', lti.carrier_name);
     return {
       line_type: (lti.type || 'unknown').toLowerCase(),
       carrier_name: lti.carrier_name || ''
     };
-  } catch {
+  } catch (err) {
+    console.error('[Twilio] Lookup error:', err instanceof Error ? err.message : err);
     return null;
   }
 }
