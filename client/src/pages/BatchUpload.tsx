@@ -32,7 +32,7 @@ export default function Home() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [results, setResults] = useState<PhoneValidationResult[] | null>(null);
-  const [stats, setStats] = useState<{ mobile: number; landlineVoip: number; invalid: number; duplicates?: number; unique?: number } | null>(null);
+  const [stats, setStats] = useState<{ mobile: number; landline: number; voip: number; invalid: number; duplicates?: number; unique?: number } | null>(null);
   const [progress, setProgress] = useState({ current: 0, total: 0, percentage: 0 });
   const [allPhones, setAllPhones] = useState<string[]>([]);
   const [duplicates, setDuplicates] = useState<DuplicateInfo[]>([]);
@@ -73,13 +73,14 @@ export default function Home() {
 
     // Calculate additional stats for summary
     const mobileCount = results.filter(r => r.valid && r.phone_type === 'mobile').length;
-    const landlineVoipCount = results.filter(r => r.valid && (r.phone_type === 'fixed_line' || r.phone_type === 'voip')).length;
+    const landlineCount = results.filter(r => r.valid && r.phone_type === 'fixed_line').length;
+    const voipCount = results.filter(r => r.valid && r.phone_type === 'voip').length;
     const duplicateCount = results.filter(r => r.is_duplicate).length;
     const hasPatientData = results.some(r => r.name || r.patientId);
     const validationDate = new Date().toLocaleString();
 
     // Create Summary Sheet
-    const validTotal = stats.mobile + stats.landlineVoip;
+    const validTotal = stats.mobile + stats.landline + stats.voip;
     const totalNumbers = validTotal + stats.invalid;
     const summaryData = [
       ['TRUEREACH VALIDATION REPORT'],
@@ -96,7 +97,8 @@ export default function Home() {
       ['LINE TYPE BREAKDOWN'],
       [''],
       ['Active Mobile (Voice & Text):', stats.mobile],
-      ['Landline / VoIP (May Be Textable):', stats.landlineVoip],
+      ['Landline (Voice Only):', stats.landline],
+      ['VoIP (May Be Textable):', stats.voip],
       ['Invalid (Does Not Exist):', stats.invalid],
       [''],
       ['DATA QUALITY'],
@@ -412,11 +414,13 @@ export default function Home() {
       const uniqueNumbers = phones.length - totalDuplicates;
       
       const mobileCount = validationResults.filter(r => r.valid && r.phone_type === 'mobile' && !r.is_duplicate).length;
-      const landlineVoipCount = validationResults.filter(r => r.valid && (r.phone_type === 'fixed_line' || r.phone_type === 'voip') && !r.is_duplicate).length;
+      const landlineCount = validationResults.filter(r => r.valid && r.phone_type === 'fixed_line' && !r.is_duplicate).length;
+      const voipCount = validationResults.filter(r => r.valid && r.phone_type === 'voip' && !r.is_duplicate).length;
 
       setStats({
         mobile: mobileCount,
-        landlineVoip: landlineVoipCount,
+        landline: landlineCount,
+        voip: voipCount,
         invalid: validationResults.filter(r => !r.valid && !r.is_duplicate).length,
         duplicates: totalDuplicates,
         unique: uniqueNumbers
@@ -625,7 +629,8 @@ export default function Home() {
               <ValidationResults
                 results={results}
                 mobileCount={stats.mobile}
-                landlineVoipCount={stats.landlineVoip}
+                landlineCount={stats.landline}
+                voipCount={stats.voip}
                 invalidCount={stats.invalid}
                 duplicateCount={stats.duplicates}
                 uniqueCount={stats.unique}

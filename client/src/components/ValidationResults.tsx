@@ -1,4 +1,4 @@
-import { CheckCircle, XCircle, Smartphone, Phone, Copy, Lightbulb, AlertTriangle, Download } from "lucide-react";
+import { CheckCircle, XCircle, Smartphone, Phone, Wifi, Copy, Lightbulb, AlertTriangle, Download } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -46,7 +46,8 @@ export interface PhoneValidationResult {
 export interface ValidationResultsProps {
   results: PhoneValidationResult[];
   mobileCount: number;
-  landlineVoipCount: number;
+  landlineCount: number;
+  voipCount: number;
   invalidCount: number;
   duplicateCount?: number;
   uniqueCount?: number;
@@ -55,7 +56,8 @@ export interface ValidationResultsProps {
 export default function ValidationResults({
   results,
   mobileCount,
-  landlineVoipCount,
+  landlineCount,
+  voipCount,
   invalidCount,
   duplicateCount,
   uniqueCount,
@@ -190,7 +192,7 @@ export default function ValidationResults({
   
   return (
     <div className="space-y-4 md:space-y-8" data-testid="validation-results">
-      <div className="grid grid-cols-3 gap-2 md:gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
         <Card className="p-2 md:p-6 border-l-2 md:border-l-4 border-l-green-500">
           <div className="flex flex-col items-center text-center gap-1 md:gap-3">
             <Smartphone className="w-6 h-6 md:w-10 md:h-10 text-green-500" />
@@ -206,8 +208,19 @@ export default function ValidationResults({
           <div className="flex flex-col items-center text-center gap-1 md:gap-3">
             <Phone className="w-6 h-6 md:w-10 md:h-10 text-orange-500" />
             <div>
-              <h3 className="text-xl md:text-3xl font-bold" data-testid="text-landline-count">{landlineVoipCount}</h3>
-              <p className="text-[10px] md:text-xs font-semibold text-orange-600 mt-0.5">Landline / VoIP</p>
+              <h3 className="text-xl md:text-3xl font-bold" data-testid="text-landline-count">{landlineCount}</h3>
+              <p className="text-[10px] md:text-xs font-semibold text-orange-600 mt-0.5">Landline</p>
+              <p className="text-[9px] md:text-[10px] text-muted-foreground">Voice Only</p>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-2 md:p-6 border-l-2 md:border-l-4 border-l-violet-500">
+          <div className="flex flex-col items-center text-center gap-1 md:gap-3">
+            <Wifi className="w-6 h-6 md:w-10 md:h-10 text-violet-500" />
+            <div>
+              <h3 className="text-xl md:text-3xl font-bold" data-testid="text-voip-count">{voipCount}</h3>
+              <p className="text-[10px] md:text-xs font-semibold text-violet-600 mt-0.5">VoIP</p>
               <p className="text-[9px] md:text-[10px] text-muted-foreground">May Be Textable</p>
             </div>
           </div>
