@@ -32,7 +32,7 @@ export default function Home() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [results, setResults] = useState<PhoneValidationResult[] | null>(null);
-  const [stats, setStats] = useState<{ valid: number; invalid: number; sms: number; duplicates?: number; unique?: number } | null>(null);
+  const [stats, setStats] = useState<{ mobile: number; landlineVoip: number; invalid: number; duplicates?: number; unique?: number } | null>(null);
   const [progress, setProgress] = useState({ current: 0, total: 0, percentage: 0 });
   const [allPhones, setAllPhones] = useState<string[]>([]);
   const [duplicates, setDuplicates] = useState<DuplicateInfo[]>([]);
@@ -73,14 +73,14 @@ export default function Home() {
 
     // Calculate additional stats for summary
     const mobileCount = results.filter(r => r.valid && r.phone_type === 'mobile').length;
-    const landlineCount = results.filter(r => r.valid && r.phone_type === 'fixed_line').length;
-    const voipCount = results.filter(r => r.valid && (r.phone_type === 'voip' || r.phone_type === 'unknown')).length;
+    const landlineVoipCount = results.filter(r => r.valid && (r.phone_type === 'fixed_line' || r.phone_type === 'voip')).length;
     const duplicateCount = results.filter(r => r.is_duplicate).length;
     const hasPatientData = results.some(r => r.name || r.patientId);
     const validationDate = new Date().toLocaleString();
 
     // Create Summary Sheet
-    const totalNumbers = stats.valid + stats.invalid;
+    const validTotal = stats.mobile + stats.landlineVoip;
+    const totalNumbers = validTotal + stats.invalid;
     const summaryData = [
       ['TRUEREACH VALIDATION REPORT'],
       [''],
@@ -89,21 +89,15 @@ export default function Home() {
       ['VALIDATION SUMMARY'],
       [''],
       ['Total Phone Numbers:', totalNumbers],
-      ['Valid Numbers:', stats.valid],
+      ['Valid Numbers:', validTotal],
       ['Invalid Numbers:', stats.invalid],
-      ['Validation Rate:', `${totalNumbers > 0 ? Math.round((stats.valid / totalNumbers) * 100) : 0}%`],
+      ['Validation Rate:', totalNumbers > 0 ? Math.round((validTotal / totalNumbers) * 100) + '%' : '0%'],
       [''],
-      ['SMS CAPABILITY'],
+      ['LINE TYPE BREAKDOWN'],
       [''],
-      ['SMS-Capable (Textable):', stats.sms],
-      ['Non-SMS (Voice Only):', stats.valid - stats.sms],
-      ['SMS Rate:', `${stats.valid > 0 ? Math.round((stats.sms / stats.valid) * 100) : 0}%`],
-      [''],
-      ['PHONE TYPE BREAKDOWN'],
-      [''],
-      ['Mobile Phones:', mobileCount],
-      ['Landlines:', landlineCount],
-      ['VoIP/Other:', voipCount],
+      ['Active Mobile (Voice & Text):', stats.mobile],
+      ['Landline / VoIP (May Be Textable):', stats.landlineVoip],
+      ['Invalid (Does Not Exist):', stats.invalid],
       [''],
       ['DATA QUALITY'],
       [''],
@@ -128,7 +122,7 @@ export default function Home() {
       'Date of Birth': r.dob || '',
       'Phone Number': r.phone,
       'Status': r.valid ? 'Valid' : 'Invalid',
-      'Phone Type': r.phone_type || 'Unknown',
+      'Phone Type': r.phone_type === 'mobile' ? 'Active Mobile' : r.phone_type === 'fixed_line' ? 'Landline' : r.phone_type === 'voip' ? 'VoIP' : r.phone_type || 'Unknown',
       'Can Receive SMS': r.can_receive_sms ? 'Yes' : 'No',
       'Carrier': r.carrier || 'Unknown',
       'Is Duplicate': r.is_duplicate ? 'Yes' : 'No',
@@ -361,8 +355,6 @@ export default function Home() {
       setProgress({ current: 0, total: phonesToValidate.length, percentage: 0 });
 
       const validationMap = new Map<string, PhoneValidationResult>();
-      let validCount = 0;
-      let smsCount = 0;
 
       // Validate phones (unique if duplicates removed, all if keeping)
       for (let i = 0; i < phonesToValidate.length; i++) {
@@ -370,9 +362,6 @@ export default function Home() {
           const result = await validateSinglePhone(phonesToValidate[i]);
           const normalized = normalizePhone(phonesToValidate[i]);
           validationMap.set(normalized, result);
-
-          if (result.valid) validCount++;
-          if (result.can_receive_sms) smsCount++;
 
           const current = i + 1;
           const percentage = Math.round((current / phonesToValidate.length) * 100);
@@ -422,10 +411,13 @@ export default function Home() {
       const totalDuplicates = duplicateIndices.size;
       const uniqueNumbers = phones.length - totalDuplicates;
       
+      const mobileCount = validationResults.filter(r => r.valid && r.phone_type === 'mobile' && !r.is_duplicate).length;
+      const landlineVoipCount = validationResults.filter(r => r.valid && (r.phone_type === 'fixed_line' || r.phone_type === 'voip') && !r.is_duplicate).length;
+
       setStats({
-        valid: validCount,
+        mobile: mobileCount,
+        landlineVoip: landlineVoipCount,
         invalid: validationResults.filter(r => !r.valid && !r.is_duplicate).length,
-        sms: smsCount,
         duplicates: totalDuplicates,
         unique: uniqueNumbers
       });
@@ -632,9 +624,9 @@ export default function Home() {
               </div>
               <ValidationResults
                 results={results}
-                validCount={stats.valid}
+                mobileCount={stats.mobile}
+                landlineVoipCount={stats.landlineVoip}
                 invalidCount={stats.invalid}
-                smsCount={stats.sms}
                 duplicateCount={stats.duplicates}
                 uniqueCount={stats.unique}
               />

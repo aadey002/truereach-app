@@ -1,4 +1,4 @@
-import { CheckCircle, XCircle, Smartphone, Copy, Lightbulb, AlertTriangle, Download } from "lucide-react";
+import { CheckCircle, XCircle, Smartphone, Phone, Copy, Lightbulb, AlertTriangle, Download } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -45,18 +45,18 @@ export interface PhoneValidationResult {
 
 export interface ValidationResultsProps {
   results: PhoneValidationResult[];
-  validCount: number;
+  mobileCount: number;
+  landlineVoipCount: number;
   invalidCount: number;
-  smsCount: number;
   duplicateCount?: number;
   uniqueCount?: number;
 }
 
 export default function ValidationResults({
   results,
-  validCount,
+  mobileCount,
+  landlineVoipCount,
   invalidCount,
-  smsCount,
   duplicateCount,
   uniqueCount,
 }: ValidationResultsProps) {
@@ -190,61 +190,64 @@ export default function ValidationResults({
   
   return (
     <div className="space-y-4 md:space-y-8" data-testid="validation-results">
-      <div className={`grid grid-cols-3 ${showDuplicateStats ? 'md:grid-cols-5' : 'md:grid-cols-3'} gap-2 md:gap-6`}>
+      <div className="grid grid-cols-3 gap-2 md:gap-4">
         <Card className="p-2 md:p-6 border-l-2 md:border-l-4 border-l-green-500">
           <div className="flex flex-col items-center text-center gap-1 md:gap-3">
-            <CheckCircle className="w-6 h-6 md:w-12 md:h-12 text-green-500" />
+            <Smartphone className="w-6 h-6 md:w-10 md:h-10 text-green-500" />
             <div>
-              <h3 className="text-xl md:text-4xl font-bold" data-testid="text-valid-count">{validCount}</h3>
-              <p className="text-xs md:text-base text-muted-foreground mt-0.5 md:mt-1">Valid</p>
+              <h3 className="text-xl md:text-3xl font-bold" data-testid="text-mobile-count">{mobileCount}</h3>
+              <p className="text-[10px] md:text-xs font-semibold text-green-600 mt-0.5">Active Mobile</p>
+              <p className="text-[9px] md:text-[10px] text-muted-foreground">Voice & Text</p>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-2 md:p-6 border-l-2 md:border-l-4 border-l-orange-500">
+          <div className="flex flex-col items-center text-center gap-1 md:gap-3">
+            <Phone className="w-6 h-6 md:w-10 md:h-10 text-orange-500" />
+            <div>
+              <h3 className="text-xl md:text-3xl font-bold" data-testid="text-landline-count">{landlineVoipCount}</h3>
+              <p className="text-[10px] md:text-xs font-semibold text-orange-600 mt-0.5">Landline / VoIP</p>
+              <p className="text-[9px] md:text-[10px] text-muted-foreground">May Be Textable</p>
             </div>
           </div>
         </Card>
 
         <Card className="p-2 md:p-6 border-l-2 md:border-l-4 border-l-red-500">
           <div className="flex flex-col items-center text-center gap-1 md:gap-3">
-            <XCircle className="w-6 h-6 md:w-12 md:h-12 text-red-500" />
+            <XCircle className="w-6 h-6 md:w-10 md:h-10 text-red-500" />
             <div>
-              <h3 className="text-xl md:text-4xl font-bold" data-testid="text-invalid-count">{invalidCount}</h3>
-              <p className="text-xs md:text-base text-muted-foreground mt-0.5 md:mt-1">Invalid</p>
+              <h3 className="text-xl md:text-3xl font-bold" data-testid="text-invalid-count">{invalidCount}</h3>
+              <p className="text-[10px] md:text-xs font-semibold text-red-600 mt-0.5">Invalid</p>
+              <p className="text-[9px] md:text-[10px] text-muted-foreground">Does Not Exist</p>
             </div>
           </div>
         </Card>
-
-        <Card className="p-2 md:p-6 border-l-2 md:border-l-4 border-l-blue-500">
-          <div className="flex flex-col items-center text-center gap-1 md:gap-3">
-            <Smartphone className="w-6 h-6 md:w-12 md:h-12 text-blue-500" />
-            <div>
-              <h3 className="text-xl md:text-4xl font-bold" data-testid="text-sms-count">{smsCount}</h3>
-              <p className="text-xs md:text-base text-muted-foreground mt-0.5 md:mt-1">SMS</p>
-            </div>
-          </div>
-        </Card>
-
-        {showDuplicateStats && (
-          <>
-            <Card className="p-2 md:p-6 border-l-2 md:border-l-4 border-l-purple-500">
-              <div className="flex flex-col items-center text-center gap-1 md:gap-3">
-                <CheckCircle className="w-6 h-6 md:w-12 md:h-12 text-purple-500" />
-                <div>
-                  <h3 className="text-xl md:text-4xl font-bold" data-testid="text-unique-count">{uniqueCount}</h3>
-                  <p className="text-xs md:text-base text-muted-foreground mt-0.5 md:mt-1">Unique</p>
-                </div>
-              </div>
-            </Card>
-
-            <Card className="p-2 md:p-6 border-l-2 md:border-l-4 border-l-yellow-500">
-              <div className="flex flex-col items-center text-center gap-1 md:gap-3">
-                <Copy className="w-6 h-6 md:w-12 md:h-12 text-yellow-600" />
-                <div>
-                  <h3 className="text-xl md:text-4xl font-bold" data-testid="text-duplicate-count">{duplicateCount}</h3>
-                  <p className="text-xs md:text-base text-muted-foreground mt-0.5 md:mt-1">Dupes</p>
-                </div>
-              </div>
-            </Card>
-          </>
-        )}
       </div>
+
+      {showDuplicateStats && (
+        <div className="grid grid-cols-2 gap-2 md:gap-4">
+          <Card className="p-2 md:p-6 border-l-2 md:border-l-4 border-l-purple-500">
+            <div className="flex flex-col items-center text-center gap-1 md:gap-3">
+              <CheckCircle className="w-6 h-6 md:w-10 md:h-10 text-purple-500" />
+              <div>
+                <h3 className="text-xl md:text-3xl font-bold" data-testid="text-unique-count">{uniqueCount}</h3>
+                <p className="text-xs md:text-sm text-muted-foreground mt-0.5 md:mt-1">Unique</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-2 md:p-6 border-l-2 md:border-l-4 border-l-yellow-500">
+            <div className="flex flex-col items-center text-center gap-1 md:gap-3">
+              <Copy className="w-6 h-6 md:w-10 md:h-10 text-yellow-600" />
+              <div>
+                <h3 className="text-xl md:text-3xl font-bold" data-testid="text-duplicate-count">{duplicateCount}</h3>
+                <p className="text-xs md:text-sm text-muted-foreground mt-0.5 md:mt-1">Dupes</p>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
 
       {hasSuggestions && (
         <Card className="p-3 md:p-6 bg-yellow-50/50 dark:bg-yellow-950/20 border-l-2 md:border-l-4 border-l-yellow-500">
@@ -331,7 +334,17 @@ export default function ValidationResults({
                       </span>
                     )}
                   </TableCell>
-                  <TableCell className="capitalize">{result.phone_type}</TableCell>
+                  <TableCell>
+                    {result.phone_type === 'mobile' ? (
+                      <Badge className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-0">Mobile</Badge>
+                    ) : result.phone_type === 'fixed_line' ? (
+                      <Badge className="bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-0">Landline</Badge>
+                    ) : result.phone_type === 'voip' ? (
+                      <Badge className="bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-0">VoIP</Badge>
+                    ) : (
+                      <Badge variant="secondary" className="capitalize">{result.phone_type}</Badge>
+                    )}
+                  </TableCell>
                   <TableCell>
                     {result.can_receive_sms ? (
                       <span className="flex items-center gap-2 text-green-600">

@@ -104,6 +104,58 @@ interface VeriphoneResponse {
 }
 
 const VERIPHONE_TIMEOUT_MS = 10_000;
+const TWILIO_TIMEOUT_MS = 8_000;
+
+interface TwilioLookupResult {
+  line_type: string; // 'mobile' | 'landline' | 'fixedVoip' | 'nonFixedVoip'
+  carrier_name: string;
+}
+
+// Twilio Lookup v2 — used as fallback for fixed_line numbers to detect text-enabled landlines
+async function twilioLookup(phone: string): Promise<TwilioLookupResult | null> {
+  const accountSid = process.env.TWILIO_ACCOUNT_SID;
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
+  if (!accountSid || !authToken) return null;
+
+  try {
+    // Normalize to E.164
+    let digits = phone.replace(/\D/g, '');
+    while (digits.length > 10 && digits.startsWith('1')) {
+      digits = digits.slice(1);
+    }
+    const e164 = '+1' + digits;
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), TWILIO_TIMEOUT_MS);
+
+    const credentials = Buffer.from(accountSid + ':' + authToken).toString('base64');
+    const response = await fetch(
+      'https://lookups.twilio.com/v2/PhoneNumbers/' + encodeURIComponent(e164) + '?Fields=line_type_intelligence',
+      {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Basic ' + credentials
+        },
+        signal: controller.signal
+      }
+    );
+    clearTimeout(timeout);
+
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    const lti = data.line_type_intelligence;
+    if (!lti) return null;
+
+    return {
+      line_type: (lti.type || 'unknown').toLowerCase(),
+      carrier_name: lti.carrier_name || ''
+    };
+  } catch {
+    return null;
+  }
+}
 
 async function validatePhoneNumber(phone: string, apiKey: string): Promise<{
   phone: string;
@@ -183,12 +235,26 @@ async function validatePhoneNumber(phone: string, apiKey: string): Promise<{
     const batchPhoneType = (data.phone_type || 'unknown').toLowerCase();
     const batchCarrier = data.carrier || 'Unknown';
     const batchIsMobile = isKnownMobileCarrier(batchCarrier);
-    const batchCorrectedType = (batchIsMobile && batchPhoneType !== 'mobile') ? 'mobile' : batchPhoneType;
+    let finalPhoneType = (batchIsMobile && batchPhoneType !== 'mobile') ? 'mobile' : batchPhoneType;
+    let canSms = isValid && (batchPhoneType === 'mobile' || batchIsMobile);
+
+    // Twilio fallback: if still fixed_line after MVNO check, ask Twilio for the real line type
+    if (isValid && finalPhoneType === 'fixed_line') {
+      const twilio = await twilioLookup(phone);
+      if (twilio) {
+        if (twilio.line_type === 'mobile' || twilio.line_type === 'fixedvoip' || twilio.line_type === 'nonfixedvoip') {
+          finalPhoneType = 'mobile';
+          canSms = true;
+        }
+        // landline stays as fixed_line
+      }
+    }
+
     return {
       phone,
       valid: isValid,
-      phone_type: batchCorrectedType,
-      can_receive_sms: isValid && (batchPhoneType === 'mobile' || batchIsMobile),
+      phone_type: finalPhoneType,
+      can_receive_sms: canSms,
       carrier: batchCarrier,
       suggestions
     };
@@ -498,10 +564,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const apiPhoneType = (data.phone_type || 'unknown').toLowerCase();
       const carrierName = data.carrier || 'Unknown';
       const isMobileByCarrier = isKnownMobileCarrier(carrierName);
-      const canReceiveSms = isValid && (apiPhoneType === 'mobile' || isMobileByCarrier);
+      let canReceiveSms = isValid && (apiPhoneType === 'mobile' || isMobileByCarrier);
 
       // Correct the phone_type if carrier override detected a mobile MVNO
-      const correctedPhoneType = (isMobileByCarrier && apiPhoneType !== 'mobile') ? 'mobile' : apiPhoneType;
+      let correctedPhoneType = (isMobileByCarrier && apiPhoneType !== 'mobile') ? 'mobile' : apiPhoneType;
+
+      // Twilio fallback: if still fixed_line after MVNO check, ask Twilio for the real line type
+      if (isValid && correctedPhoneType === 'fixed_line') {
+        const twilio = await twilioLookup(phone);
+        if (twilio) {
+          if (twilio.line_type === 'mobile' || twilio.line_type === 'fixedvoip' || twilio.line_type === 'nonfixedvoip') {
+            correctedPhoneType = 'mobile';
+            canReceiveSms = true;
+          }
+          // landline stays as fixed_line
+        }
+      }
 
       const result = {
         valid: isValid,
@@ -520,7 +598,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // CRITICAL: ALWAYS run full analysis to get all suggestions (placeholder, transposed, etc.)
         // Pass ORIGINAL phone string to preserve format issue detection (extensions, punctuation, etc.)
         const standardSuggestions = analyzeInvalidPhone(phone, data.status);
-        
+
         // If NANP validation failed, ADD specific NANP guidance and warning
         if (!isNANPValid && digits.length === 10) {
           const nanpSuggestion = getNANPSuggestion(digits);
@@ -538,9 +616,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           result.suggestions = standardSuggestions;
         }
       } else if (result.phone_type === 'fixed_line') {
-        result.warnings.push('Non-mobile — SMS delivery not guaranteed');
+        result.warnings.push('Landline — voice only, not textable');
       } else if (result.phone_type === 'voip') {
-        result.warnings.push('Non-mobile (VoIP) — SMS delivery not guaranteed');
+        result.warnings.push('VoIP — may be textable');
       }
 
       res.json(result);
