@@ -16,14 +16,15 @@ const trueReachValidate = async (phoneNumber: string) => {
     }
     const smsCapable = data.can_receive_sms === true;
     const carrier = data.carrier || "Unknown";
-    return { status: "valid", smsCapable, carrier };
+    const phoneType = data.phone_type || "unknown";
+    return { status: "valid", smsCapable, carrier, phoneType };
   } catch (e) {
     return { status: "invalid", reason: "Validation service unavailable" };
   }
 };
 
 // ── Types ─────────────────────────────────────────────────────────────────
-type ValidationStatus = "idle" | "checking" | "valid" | "landline" | "invalid";
+type ValidationStatus = "idle" | "checking" | "valid" | "landline" | "voip" | "invalid";
 interface StatusConfig {
   border: string;
   glow: string;
@@ -36,13 +37,15 @@ const STATUS: Record<ValidationStatus, StatusConfig> = {
   idle:     { border: "hsl(var(--border))", glow: "none",                           badge: null, label: "" },
   checking: { border: "hsl(var(--muted-foreground))", glow: "none",                           badge: "⟳",  label: "Validating…" },
   valid:    { border: "#22c55e", glow: "0 0 0 3px rgba(34,197,94,.25)",  badge: "✓",  label: "Valid & Textable" },
-  landline: { border: "#3b82f6", glow: "0 0 0 3px rgba(59,130,246,.25)", badge: "☎",  label: "Valid — Non-Mobile · Verify SMS" },
+  landline: { border: "#f97316", glow: "0 0 0 3px rgba(249,115,22,.25)", badge: "☎",  label: "Valid — Landline · Voice Only" },
+  voip:     { border: "#8b5cf6", glow: "0 0 0 3px rgba(139,92,246,.25)", badge: "☎",  label: "Valid — VoIP · May Be Textable" },
   invalid:  { border: "#ef4444", glow: "0 0 0 3px rgba(239,68,68,.25)",  badge: "✕",  label: "Invalid Number" },
 };
 
 const STATUS_BG: Partial<Record<ValidationStatus, string>> = {
   valid:    "bg-green-500",
-  landline: "bg-blue-500",
+  landline: "bg-orange-500",
+  voip:     "bg-violet-500",
   invalid:  "bg-red-500",
 };
 
@@ -67,7 +70,7 @@ interface PhoneFieldProps {
 
 function PhoneField({ label, value, onChange, status, reason, carrier, onValidate }: PhoneFieldProps) {
   const s = STATUS[status] || STATUS.idle;
-  const hasResult = ["valid","landline","invalid"].includes(status);
+  const hasResult = ["valid","landline","voip","invalid"].includes(status);
 
   return (
     <div className="flex flex-col gap-1">
@@ -118,7 +121,8 @@ function Legend() {
     <div className="flex gap-4 flex-wrap bg-card rounded-[10px] px-4 py-2.5 border border-border mb-5">
       {[
         { color: "#22c55e", label: "Valid & SMS-capable" },
-        { color: "#3b82f6", label: "Valid – Non-Mobile · Verify SMS" },
+        { color: "#f97316", label: "Landline · Voice Only" },
+        { color: "#8b5cf6", label: "VoIP · May Be Textable" },
         { color: "#ef4444", label: "Invalid / Undeliverable" },
       ].map(({ color, label }) => (
         <div key={label} className="flex items-center gap-2">
@@ -176,10 +180,13 @@ export default function PMSDemo() {
     addLog(`Validating ${fieldLabel}: ${phone}`, "info");
     const result = await trueReachValidate(phone);
     if (result.status === "valid") {
-      const s: ValidationStatus = result.smsCapable ? "valid" : "landline";
+      const s: ValidationStatus = result.smsCapable ? "valid" : result.phoneType === "voip" ? "voip" : "landline";
       setStatus(s);
       setMeta({ carrier: result.carrier });
-      addLog(`${fieldLabel} — ${result.smsCapable ? "✓ SMS-capable" : "☎ Non-Mobile · Verify SMS"} (${result.carrier})`, result.smsCapable ? "success" : "info");
+      const logMsg = result.smsCapable
+        ? "✓ SMS-capable"
+        : result.phoneType === "voip" ? "☎ VoIP · May Be Textable" : "☎ Landline · Voice Only";
+      addLog(`${fieldLabel} — ${logMsg} (${result.carrier})`, result.smsCapable ? "success" : "info");
     } else {
       setStatus("invalid");
       setMeta({ reason: result.reason });

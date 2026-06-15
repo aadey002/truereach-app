@@ -47,7 +47,7 @@ export default function WidgetDemo() {
         throw new Error(data.error);
       }
       
-      data.status = !data.valid ? 'invalid' : data.can_receive_sms ? 'valid' : 'landline';
+      data.status = !data.valid ? 'invalid' : data.can_receive_sms ? 'valid' : data.phone_type === 'voip' ? 'voip' : 'landline';
       setResult(data);
     } catch (error) {
       console.error('Validation error:', error);
@@ -119,10 +119,12 @@ export default function WidgetDemo() {
               result.status === 'error'
                 ? 'bg-orange-50 border-orange-400 dark:bg-orange-950/20 dark:border-orange-600'
                 : result.status === 'landline'
-                  ? 'bg-blue-50 border-blue-400 dark:bg-blue-950/20 dark:border-blue-600'
-                  : result.valid
-                    ? 'bg-green-50 border-green-400 dark:bg-green-950/20 dark:border-green-600'
-                    : 'bg-red-50 border-red-400 dark:bg-red-950/20 dark:border-red-600'
+                  ? 'bg-orange-50 border-orange-400 dark:bg-orange-950/20 dark:border-orange-600'
+                  : result.status === 'voip'
+                    ? 'bg-violet-50 border-violet-400 dark:bg-violet-950/20 dark:border-violet-600'
+                    : result.valid
+                      ? 'bg-green-50 border-green-400 dark:bg-green-950/20 dark:border-green-600'
+                      : 'bg-red-50 border-red-400 dark:bg-red-950/20 dark:border-red-600'
             }`}>
               {result.status === 'error' ? (
                 <div className="flex flex-col items-center text-center gap-3">
@@ -138,19 +140,40 @@ export default function WidgetDemo() {
                 </div>
               ) : result.status === 'landline' ? (
                 <div className="flex flex-col items-center text-center gap-3">
-                  <Phone className="w-12 h-12 text-blue-500" />
+                  <Phone className="w-12 h-12 text-orange-500" />
                   <div>
-                    <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-300">
-                      Valid — Non-Mobile · Verify SMS
+                    <h3 className="text-lg font-semibold text-orange-800 dark:text-orange-300">
+                      Valid — Landline · Voice Only
                     </h3>
                     <div className="flex flex-wrap justify-center gap-2 mt-3">
-                      <Badge variant="secondary" className="text-sm">
-                        {result.phone_type === 'fixed_line' ? 'Landline' :
-                         result.phone_type === 'voip' ? 'VoIP' :
-                         result.phone_type}
-                      </Badge>
-                      <Badge className="bg-blue-500 hover:bg-blue-600 text-sm">
+                      <Badge variant="secondary" className="text-sm">Landline</Badge>
+                      <Badge className="bg-orange-500 hover:bg-orange-600 text-sm">
                         ☎ No SMS
+                      </Badge>
+                    </div>
+                    {result.carrier && result.carrier !== 'Unknown' && (
+                      <p className="text-muted-foreground mt-2">
+                        Carrier: {result.carrier}
+                      </p>
+                    )}
+                    {result.formatted && (
+                      <p className="text-muted-foreground text-sm mt-1">
+                        Formatted: {result.formatted}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ) : result.status === 'voip' ? (
+                <div className="flex flex-col items-center text-center gap-3">
+                  <Phone className="w-12 h-12 text-violet-500" />
+                  <div>
+                    <h3 className="text-lg font-semibold text-violet-800 dark:text-violet-300">
+                      Valid — VoIP · May Be Textable
+                    </h3>
+                    <div className="flex flex-wrap justify-center gap-2 mt-3">
+                      <Badge variant="secondary" className="text-sm">VoIP</Badge>
+                      <Badge className="bg-violet-500 hover:bg-violet-600 text-sm">
+                        ☎ Verify SMS
                       </Badge>
                     </div>
                     {result.carrier && result.carrier !== 'Unknown' && (
