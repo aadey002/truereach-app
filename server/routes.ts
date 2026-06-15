@@ -246,12 +246,12 @@ async function validatePhoneNumber(phone: string, apiKey: string): Promise<{
 
     const batchPhoneType = (data.phone_type || 'unknown').toLowerCase();
     const batchCarrier = data.carrier || 'Unknown';
-    const batchIsMobile = isKnownMobileCarrier(batchCarrier);
-    let finalPhoneType = (batchIsMobile && batchPhoneType !== 'mobile') ? 'mobile' : batchPhoneType;
-    let canSms = isValid && (batchPhoneType === 'mobile' || batchIsMobile);
+    let finalPhoneType = batchPhoneType;
+    let canSms = false;
+    let finalCarrier = batchCarrier;
 
-    // Twilio fallback: if still fixed_line after MVNO check, ask Twilio for the real line type
-    if (isValid && finalPhoneType === 'fixed_line') {
+    // Twilio is primary line type source for all valid numbers
+    if (isValid) {
       const twilio = await twilioLookup(phone);
       if (twilio) {
         if (twilio.line_type === 'mobile' || twilio.line_type === 'fixedvoip') {
@@ -259,8 +259,17 @@ async function validatePhoneNumber(phone: string, apiKey: string): Promise<{
           canSms = true;
         } else if (twilio.line_type === 'nonfixedvoip') {
           finalPhoneType = 'voip';
+        } else if (twilio.line_type === 'landline') {
+          finalPhoneType = 'fixed_line';
         }
-        // landline stays as fixed_line
+        if (twilio.carrier_name) {
+          finalCarrier = twilio.carrier_name;
+        }
+      } else {
+        // Twilio unavailable — fall back to Veriphone + MVNO correction
+        const batchIsMobile = isKnownMobileCarrier(batchCarrier);
+        finalPhoneType = (batchIsMobile && batchPhoneType !== 'mobile') ? 'mobile' : batchPhoneType;
+        canSms = batchPhoneType === 'mobile' || batchIsMobile;
       }
     }
 
@@ -269,7 +278,7 @@ async function validatePhoneNumber(phone: string, apiKey: string): Promise<{
       valid: isValid,
       phone_type: finalPhoneType,
       can_receive_sms: canSms,
-      carrier: batchCarrier,
+      carrier: finalCarrier,
       suggestions
     };
   } catch (error) {
@@ -573,18 +582,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isValid = true;
       }
       
-      // Determine SMS capability — 'mobile' is textable, plus known mobile
-      // carriers that Veriphone misclassifies as fixed_line (MVNOs like Boost, Simple Mobile, etc.)
+      // Twilio is primary line type source for all valid numbers
       const apiPhoneType = (data.phone_type || 'unknown').toLowerCase();
-      const carrierName = data.carrier || 'Unknown';
-      const isMobileByCarrier = isKnownMobileCarrier(carrierName);
-      let canReceiveSms = isValid && (apiPhoneType === 'mobile' || isMobileByCarrier);
+      const veriCarrier = data.carrier || 'Unknown';
+      let correctedPhoneType = apiPhoneType;
+      let canReceiveSms = false;
+      let carrierName = veriCarrier;
 
-      // Correct the phone_type if carrier override detected a mobile MVNO
-      let correctedPhoneType = (isMobileByCarrier && apiPhoneType !== 'mobile') ? 'mobile' : apiPhoneType;
-
-      // Twilio fallback: if still fixed_line after MVNO check, ask Twilio for the real line type
-      if (isValid && correctedPhoneType === 'fixed_line') {
+      if (isValid) {
         const twilio = await twilioLookup(phone);
         if (twilio) {
           if (twilio.line_type === 'mobile' || twilio.line_type === 'fixedvoip') {
@@ -592,8 +597,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
             canReceiveSms = true;
           } else if (twilio.line_type === 'nonfixedvoip') {
             correctedPhoneType = 'voip';
+          } else if (twilio.line_type === 'landline') {
+            correctedPhoneType = 'fixed_line';
           }
-          // landline stays as fixed_line
+          if (twilio.carrier_name) {
+            carrierName = twilio.carrier_name;
+          }
+        } else {
+          // Twilio unavailable — fall back to Veriphone + MVNO correction
+          const isMobileByCarrier = isKnownMobileCarrier(veriCarrier);
+          correctedPhoneType = (isMobileByCarrier && apiPhoneType !== 'mobile') ? 'mobile' : apiPhoneType;
+          canReceiveSms = apiPhoneType === 'mobile' || isMobileByCarrier;
         }
       }
 
