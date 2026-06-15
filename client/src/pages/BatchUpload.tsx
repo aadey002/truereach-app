@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import FileUpload from "@/components/FileUpload";
 import ValidationResults, { PhoneValidationResult } from "@/components/ValidationResults";
 import Papa from "papaparse";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import {
   Collapsible,
   CollapsibleContent,
@@ -66,10 +66,10 @@ export default function Home() {
     }
   }, [results]);
 
-  const downloadResultsAsExcel = () => {
+  const downloadResultsAsExcel = async () => {
     if (!results || !stats) return;
 
-    const workbook = XLSX.utils.book_new();
+    const workbook = new ExcelJS.Workbook();
 
     // Calculate additional stats for summary
     const mobileCount = results.filter(r => r.valid && r.phone_type === 'mobile').length;
@@ -82,7 +82,9 @@ export default function Home() {
     // Create Summary Sheet
     const validTotal = stats.mobile + stats.landline + stats.voip;
     const totalNumbers = validTotal + stats.invalid;
-    const summaryData = [
+    const summarySheet = workbook.addWorksheet('Summary');
+    summarySheet.columns = [{ width: 30 }, { width: 20 }];
+    const summaryRows = [
       ['TRUEREACH VALIDATION REPORT'],
       [''],
       ['Report Generated:', validationDate],
@@ -111,51 +113,54 @@ export default function Home() {
       ['Handle according to your organization\'s privacy policies.'],
       ['Data auto-expires in browser after 30 minutes.']
     ];
-
-    const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
-    summarySheet['!cols'] = [{ wch: 30 }, { wch: 20 }];
-    XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary');
+    summaryRows.forEach(row => summarySheet.addRow(row));
 
     // Create Data Sheet
-    const excelData = results.map(r => ({
-      'Patient ID': r.patientId || '',
-      'Name': r.name || '',
-      'Email': r.email || '',
-      'Date of Birth': r.dob || '',
-      'Phone Number': r.phone,
-      'Status': r.valid ? 'Valid' : 'Invalid',
-      'Phone Type': r.phone_type === 'mobile' ? 'Active Mobile' : r.phone_type === 'fixed_line' ? 'Landline' : r.phone_type === 'voip' ? 'VoIP' : r.phone_type || 'Unknown',
-      'Can Receive SMS': r.can_receive_sms ? 'Yes' : 'No',
-      'Carrier': r.carrier || 'Unknown',
-      'Is Duplicate': r.is_duplicate ? 'Yes' : 'No',
-      'Suggested Fix (VERIFY FIRST)': r.suggestions && r.suggestions.length > 0 
-        ? r.suggestions.slice(0, 3).map(s => 
-            s.suggestedNumbers && s.suggestedNumbers.length > 0 
-              ? `${s.suggestedNumbers[0]} (${s.confidence || 0}%)`
-              : s.message
-          ).join('; ')
-        : ''
-    }));
-
-    const dataSheet = XLSX.utils.json_to_sheet(excelData);
-    const colWidths = [
-      { wch: 15 },  // Patient ID
-      { wch: 25 },  // Name
-      { wch: 25 },  // Email
-      { wch: 12 },  // Date of Birth
-      { wch: 18 },  // Phone Number
-      { wch: 10 },  // Status
-      { wch: 12 },  // Phone Type
-      { wch: 15 },  // Can Receive SMS
-      { wch: 20 },  // Carrier
-      { wch: 12 },  // Is Duplicate
-      { wch: 40 }   // Suggested Fix
+    const dataSheet = workbook.addWorksheet('Validation Results');
+    dataSheet.columns = [
+      { header: 'Patient ID', key: 'patientId', width: 15 },
+      { header: 'Name', key: 'name', width: 25 },
+      { header: 'Email', key: 'email', width: 25 },
+      { header: 'Date of Birth', key: 'dob', width: 12 },
+      { header: 'Phone Number', key: 'phone', width: 18 },
+      { header: 'Status', key: 'status', width: 10 },
+      { header: 'Phone Type', key: 'phoneType', width: 12 },
+      { header: 'Can Receive SMS', key: 'sms', width: 15 },
+      { header: 'Carrier', key: 'carrier', width: 20 },
+      { header: 'Is Duplicate', key: 'duplicate', width: 12 },
+      { header: 'Suggested Fix (VERIFY FIRST)', key: 'suggestion', width: 40 }
     ];
-    dataSheet['!cols'] = colWidths;
-    XLSX.utils.book_append_sheet(workbook, dataSheet, 'Validation Results');
+    results.forEach(r => {
+      dataSheet.addRow({
+        patientId: r.patientId || '',
+        name: r.name || '',
+        email: r.email || '',
+        dob: r.dob || '',
+        phone: r.phone,
+        status: r.valid ? 'Valid' : 'Invalid',
+        phoneType: r.phone_type === 'mobile' ? 'Active Mobile' : r.phone_type === 'fixed_line' ? 'Landline' : r.phone_type === 'voip' ? 'VoIP' : r.phone_type || 'Unknown',
+        sms: r.can_receive_sms ? 'Yes' : 'No',
+        carrier: r.carrier || 'Unknown',
+        duplicate: r.is_duplicate ? 'Yes' : 'No',
+        suggestion: r.suggestions && r.suggestions.length > 0
+          ? r.suggestions.slice(0, 3).map(s =>
+              s.suggestedNumbers && s.suggestedNumbers.length > 0
+                ? s.suggestedNumbers[0] + ' (' + (s.confidence || 0) + '%)'
+                : s.message
+            ).join('; ')
+          : ''
+      });
+    });
 
-    const fileName = `TrueReach_Validation_${new Date().toISOString().split('T')[0]}.xlsx`;
-    XLSX.writeFile(workbook, fileName);
+    const fileName = 'TrueReach_Validation_' + new Date().toISOString().split('T')[0] + '.xlsx';
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    URL.revokeObjectURL(url);
 
     toast({
       title: "Download Complete",
@@ -226,10 +231,22 @@ export default function Home() {
               });
             }
           } else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
-            const workbook = XLSX.read(data, { type: 'array' });
-            const firstSheetName = workbook.SheetNames[0];
-            const worksheet = workbook.Sheets[firstSheetName];
-            const jsonData = XLSX.utils.sheet_to_json(worksheet);
+            const wb = new ExcelJS.Workbook();
+            await wb.xlsx.load(data);
+            const worksheet = wb.worksheets[0];
+            const headers: string[] = [];
+            worksheet.getRow(1).eachCell((cell, colNum) => {
+              headers[colNum - 1] = String(cell.value || '');
+            });
+            const jsonData: Record<string, any>[] = [];
+            worksheet.eachRow((row, rowNum) => {
+              if (rowNum === 1) return;
+              const obj: Record<string, any> = {};
+              row.eachCell((cell, colNum) => {
+                obj[headers[colNum - 1]] = cell.value;
+              });
+              jsonData.push(obj);
+            });
 
             if (jsonData && jsonData.length > 0) {
               const firstRow = jsonData[0] as Record<string, any>;
