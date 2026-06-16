@@ -3,6 +3,9 @@ import { z } from "zod";
 // Export auth schema for Replit Auth integration
 export * from "./models/auth";
 
+// Export analytics schema for Contact Hygiene Reports
+export * from "./models/analytics";
+
 export const phoneValidationResultSchema = z.object({
   phone: z.string(),
   valid: z.boolean(),

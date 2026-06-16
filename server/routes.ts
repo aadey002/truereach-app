@@ -8,27 +8,16 @@ import pg from "pg";
 import { validationResponseSchema } from "@shared/schema";
 import { analyzeInvalidPhone, isValidNANPFormat, getNANPSuggestion, type PhoneSuggestion } from "./phoneAnalyzer";
 import { setupAuth, registerAuthRoutes } from "./replit_integrations/auth";
+import { recordValidationAggregates } from "./analyticsService";
+import { db } from "./db";
+import { validationSummaries, carrierSummaries, orgBaselines } from "@shared/schema";
+import { eq, sql, desc, and, gte } from "drizzle-orm";
 
 let apiLimiter: RateLimiterPostgres | RateLimiterMemory;
 let strictLimiter: RateLimiterPostgres | RateLimiterMemory;
 let orgDailyLimiter: RateLimiterPostgres | RateLimiterMemory;
 
-// Known mobile/MVNO carriers that Veriphone often misclassifies as fixed_line
-const KNOWN_MOBILE_CARRIERS = [
-  'simple mobile', 'boost mobile', 'cricket', 'cricket wireless',
-  'metro', 'metro by t-mobile', 'metropcs', 'mint mobile',
-  'visible', 'google fi', 'ting', 'us mobile', 'republic wireless',
-  'consumer cellular', 'tracfone', 'straight talk', 'total wireless',
-  'net10', 'h2o wireless', 'lycamobile', 'ultra mobile',
-  'red pocket', 'gen mobile', 'good2go', 'twigby',
-  'wing', 'reach mobile', 'tello', 'ting mobile',
-];
-
-// Check if carrier name matches a known mobile carrier
-function isKnownMobileCarrier(carrier: string): boolean {
-  const lower = carrier.toLowerCase().trim();
-  return KNOWN_MOBILE_CARRIERS.some(c => lower.includes(c));
-}
+import { KNOWN_MOBILE_CARRIERS, isKnownMobileCarrier } from "./carriers";
 
 // Per-org daily validation cap (default 10,000 validations/day)
 const ORG_DAILY_LIMIT = parseInt(process.env.ORG_DAILY_VALIDATION_LIMIT || '10000');
@@ -651,6 +640,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         result.warnings.push('VoIP — may be textable');
       }
 
+      // Fire-and-forget analytics aggregation
+      if (org_id) {
+        recordValidationAggregates(org_id, [{
+          valid: result.valid,
+          phone_type: result.phone_type,
+          can_receive_sms: result.can_receive_sms,
+          carrier: result.carrier,
+        }], 'realtime').catch(err =>
+          console.error('[Analytics] realtime aggregate error:', err.message)
+        );
+      }
+
       res.json(result);
     } catch (error: any) {
       if (error?.msBeforeNext !== undefined) {
@@ -740,6 +741,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         sms_count: smsCount
       };
 
+      // Fire-and-forget analytics aggregation
+      const batchOrgId = req.body?.org_id || req.headers['x-org-id'] as string || 'unknown';
+      recordValidationAggregates(batchOrgId, results.map(r => ({
+        valid: r.valid,
+        phone_type: r.phone_type,
+        can_receive_sms: r.can_receive_sms,
+        carrier: r.carrier,
+      })), 'batch').catch(err =>
+        console.error('[Analytics] batch aggregate error:', err.message)
+      );
+
       res.json(response);
     } catch (error: any) {
       if (error?.msBeforeNext !== undefined) {
@@ -750,6 +762,269 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         error: error instanceof Error ? error.message : 'An error occurred during validation' 
       });
+    }
+  });
+
+  // ── Contact Hygiene Report Endpoints ──────────────────────────────────
+
+  // Full hygiene report for an org
+  app.get('/api/reports/hygiene', requireApiAuth, async (req, res) => {
+    try {
+      const orgId = req.query.org_id as string;
+      if (!orgId) return res.status(400).json({ error: 'org_id required' });
+
+      // Aggregate all-time totals for this org
+      const summaries = await db
+        .select()
+        .from(validationSummaries)
+        .where(eq(validationSummaries.orgId, orgId));
+
+      const totals = summaries.reduce(
+        (acc, row) => {
+          acc.total += row.totalValidated;
+          acc.mobile += row.mobileCount;
+          acc.fixedLine += row.fixedLineCount;
+          acc.voip += row.voipCount;
+          acc.invalid += row.invalidCount;
+          acc.smsCap += row.smsCapableCount;
+          acc.mvno += row.mvnoDetectedCount;
+          return acc;
+        },
+        { total: 0, mobile: 0, fixedLine: 0, voip: 0, invalid: 0, smsCap: 0, mvno: 0 }
+      );
+
+      const pct = (n: number) => totals.total > 0 ? Math.round((n / totals.total) * 1000) / 10 : 0;
+      const invalidPct = pct(totals.invalid);
+      const grade = invalidPct < 5 ? 'A' : invalidPct < 15 ? 'B' : invalidPct < 30 ? 'C' : invalidPct < 50 ? 'D' : 'F';
+
+      // Carrier distribution
+      const carriers = await db
+        .select()
+        .from(carrierSummaries)
+        .where(eq(carrierSummaries.orgId, orgId));
+
+      const carrierTotals = new Map<string, { total: number; byType: Record<string, number>; isMvno: boolean }>();
+      for (const c of carriers) {
+        const existing = carrierTotals.get(c.carrierName) || { total: 0, byType: {}, isMvno: c.isMvno };
+        existing.total += c.count;
+        existing.byType[c.lineType] = (existing.byType[c.lineType] || 0) + c.count;
+        carrierTotals.set(c.carrierName, existing);
+      }
+
+      const topCarriers = Array.from(carrierTotals.entries())
+        .map(([carrier, data]) => ({
+          carrier,
+          count: data.total,
+          pct: totals.total > 0 ? Math.round((data.total / totals.total) * 1000) / 10 : 0,
+          is_mvno: data.isMvno,
+        }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 15);
+
+      const carrierByType: Record<string, { carrier: string; count: number }[]> = { mobile: [], fixed_line: [], voip: [] };
+      for (const [carrier, data] of carrierTotals) {
+        for (const [type, count] of Object.entries(data.byType)) {
+          if (carrierByType[type]) {
+            carrierByType[type].push({ carrier, count });
+          }
+        }
+      }
+      for (const type of Object.keys(carrierByType)) {
+        carrierByType[type].sort((a, b) => b.count - a.count);
+        carrierByType[type] = carrierByType[type].slice(0, 10);
+      }
+
+      const mvnoTotal = Array.from(carrierTotals.values()).filter(d => d.isMvno).reduce((s, d) => s + d.total, 0);
+
+      // Weekly trends (last 12 weeks)
+      const weeklyMap = new Map<string, { total: number; mobile: number; invalid: number }>();
+      for (const s of summaries) {
+        const d = new Date(s.periodDate);
+        const weekStart = new Date(d);
+        weekStart.setDate(d.getDate() - d.getDay());
+        const weekKey = weekStart.toISOString().slice(0, 10);
+        const existing = weeklyMap.get(weekKey) || { total: 0, mobile: 0, invalid: 0 };
+        existing.total += s.totalValidated;
+        existing.mobile += s.mobileCount;
+        existing.invalid += s.invalidCount;
+        weeklyMap.set(weekKey, existing);
+      }
+      const weekly = Array.from(weeklyMap.entries())
+        .map(([week, data]) => ({
+          week,
+          total: data.total,
+          mobile_pct: data.total > 0 ? Math.round((data.mobile / data.total) * 1000) / 10 : 0,
+          invalid_pct: data.total > 0 ? Math.round((data.invalid / data.total) * 1000) / 10 : 0,
+        }))
+        .sort((a, b) => a.week.localeCompare(b.week))
+        .slice(-12);
+
+      // Monthly trends (last 6 months)
+      const monthlyMap = new Map<string, { total: number; mobile: number; invalid: number }>();
+      for (const s of summaries) {
+        const monthKey = s.periodDate.slice(0, 7);
+        const existing = monthlyMap.get(monthKey) || { total: 0, mobile: 0, invalid: 0 };
+        existing.total += s.totalValidated;
+        existing.mobile += s.mobileCount;
+        existing.invalid += s.invalidCount;
+        monthlyMap.set(monthKey, existing);
+      }
+      const monthly = Array.from(monthlyMap.entries())
+        .map(([month, data]) => ({
+          month,
+          total: data.total,
+          mobile_pct: data.total > 0 ? Math.round((data.mobile / data.total) * 1000) / 10 : 0,
+          invalid_pct: data.total > 0 ? Math.round((data.invalid / data.total) * 1000) / 10 : 0,
+        }))
+        .sort((a, b) => a.month.localeCompare(b.month))
+        .slice(-6);
+
+      // ROI summary from baseline
+      const baseline = await db
+        .select()
+        .from(orgBaselines)
+        .where(eq(orgBaselines.orgId, orgId))
+        .limit(1);
+
+      const roi = baseline.length > 0
+        ? {
+            baseline_date: baseline[0].baselineDate,
+            baseline_invalid_pct: baseline[0].invalidPct,
+            current_invalid_pct: invalidPct,
+            improvement_pct: baseline[0].invalidPct > 0
+              ? Math.round(((baseline[0].invalidPct - invalidPct) / baseline[0].invalidPct) * 1000) / 10
+              : 0,
+            baseline_grade: baseline[0].dataQualityGrade,
+            current_grade: grade,
+          }
+        : null;
+
+      res.json({
+        org_id: orgId,
+        report_date: new Date().toISOString().slice(0, 10),
+        contact_quality_snapshot: {
+          total_validated: totals.total,
+          mobile_pct: pct(totals.mobile),
+          fixed_line_pct: pct(totals.fixedLine),
+          voip_pct: pct(totals.voip),
+          invalid_pct: invalidPct,
+          sms_capable_pct: pct(totals.smsCap),
+          mvno_detected_count: totals.mvno,
+          data_quality_grade: grade,
+        },
+        carrier_distribution: {
+          top_carriers: topCarriers,
+          carrier_by_line_type: carrierByType,
+          mvno_detection_rate: totals.total > 0 ? Math.round((mvnoTotal / totals.total) * 1000) / 10 : 0,
+        },
+        trends: { weekly, monthly },
+        roi_summary: roi,
+      });
+    } catch (error) {
+      console.error('[Reports] hygiene error:', error);
+      res.status(500).json({ error: 'Failed to generate report' });
+    }
+  });
+
+  // Carrier drill-down
+  app.get('/api/reports/carriers', requireApiAuth, async (req, res) => {
+    try {
+      const orgId = req.query.org_id as string;
+      const period = (req.query.period as string) || '30d';
+      if (!orgId) return res.status(400).json({ error: 'org_id required' });
+
+      const days = period === '7d' ? 7 : period === '90d' ? 90 : period === 'all' ? 3650 : 30;
+      const sinceDate = new Date();
+      sinceDate.setDate(sinceDate.getDate() - days);
+      const sinceDateStr = sinceDate.toISOString().slice(0, 10);
+
+      const carriers = await db
+        .select()
+        .from(carrierSummaries)
+        .where(and(
+          eq(carrierSummaries.orgId, orgId),
+          gte(carrierSummaries.periodDate, sinceDateStr)
+        ));
+
+      const carrierMap = new Map<string, { total: number; byType: Record<string, number>; isMvno: boolean }>();
+      for (const c of carriers) {
+        const existing = carrierMap.get(c.carrierName) || { total: 0, byType: {}, isMvno: c.isMvno };
+        existing.total += c.count;
+        existing.byType[c.lineType] = (existing.byType[c.lineType] || 0) + c.count;
+        carrierMap.set(c.carrierName, existing);
+      }
+
+      const grandTotal = Array.from(carrierMap.values()).reduce((s, d) => s + d.total, 0);
+      const result = Array.from(carrierMap.entries())
+        .map(([carrier, data]) => ({
+          carrier,
+          count: data.total,
+          pct: grandTotal > 0 ? Math.round((data.total / grandTotal) * 1000) / 10 : 0,
+          line_types: data.byType,
+          is_mvno: data.isMvno,
+        }))
+        .sort((a, b) => b.count - a.count);
+
+      res.json({ org_id: orgId, period, total: grandTotal, carriers: result });
+    } catch (error) {
+      console.error('[Reports] carriers error:', error);
+      res.status(500).json({ error: 'Failed to generate carrier report' });
+    }
+  });
+
+  // Time series trends
+  app.get('/api/reports/trends', requireApiAuth, async (req, res) => {
+    try {
+      const orgId = req.query.org_id as string;
+      const granularity = (req.query.granularity as string) || 'week';
+      if (!orgId) return res.status(400).json({ error: 'org_id required' });
+
+      const summaries = await db
+        .select()
+        .from(validationSummaries)
+        .where(eq(validationSummaries.orgId, orgId));
+
+      const bucketMap = new Map<string, { total: number; mobile: number; fixedLine: number; voip: number; invalid: number; smsCap: number }>();
+
+      for (const s of summaries) {
+        let key: string;
+        if (granularity === 'day') {
+          key = s.periodDate;
+        } else if (granularity === 'month') {
+          key = s.periodDate.slice(0, 7);
+        } else {
+          const d = new Date(s.periodDate);
+          const weekStart = new Date(d);
+          weekStart.setDate(d.getDate() - d.getDay());
+          key = weekStart.toISOString().slice(0, 10);
+        }
+
+        const existing = bucketMap.get(key) || { total: 0, mobile: 0, fixedLine: 0, voip: 0, invalid: 0, smsCap: 0 };
+        existing.total += s.totalValidated;
+        existing.mobile += s.mobileCount;
+        existing.fixedLine += s.fixedLineCount;
+        existing.voip += s.voipCount;
+        existing.invalid += s.invalidCount;
+        existing.smsCap += s.smsCapableCount;
+        bucketMap.set(key, existing);
+      }
+
+      const trends = Array.from(bucketMap.entries())
+        .map(([period, data]) => ({
+          period,
+          total: data.total,
+          mobile_pct: data.total > 0 ? Math.round((data.mobile / data.total) * 1000) / 10 : 0,
+          fixed_line_pct: data.total > 0 ? Math.round((data.fixedLine / data.total) * 1000) / 10 : 0,
+          voip_pct: data.total > 0 ? Math.round((data.voip / data.total) * 1000) / 10 : 0,
+          invalid_pct: data.total > 0 ? Math.round((data.invalid / data.total) * 1000) / 10 : 0,
+          sms_capable_pct: data.total > 0 ? Math.round((data.smsCap / data.total) * 1000) / 10 : 0,
+        }))
+        .sort((a, b) => a.period.localeCompare(b.period));
+
+      res.json({ org_id: orgId, granularity, data: trends });
+    } catch (error) {
+      console.error('[Reports] trends error:', error);
+      res.status(500).json({ error: 'Failed to generate trends' });
     }
   });
 
