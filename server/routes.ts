@@ -765,6 +765,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ── Health Check Endpoint ────────────────────────────────────────────
+
+  app.get('/api/health-check', requireApiAuth, async (_req, res) => {
+    try {
+      const { runHealthCheck, sendHealthCheckEmail } = await import("./healthCheck");
+      const result = await runHealthCheck();
+
+      // Send email if requested
+      const sendEmail = _req.query.email === 'true';
+      let emailSent = false;
+      if (sendEmail) {
+        emailSent = await sendHealthCheckEmail(result);
+      }
+
+      res.json({ ...result, email_sent: emailSent });
+    } catch (error: any) {
+      console.error('[HealthCheck] endpoint error:', error.message);
+      res.status(500).json({ error: 'Health check failed', details: error.message });
+    }
+  });
+
   // ── Contact Hygiene Report Endpoints ──────────────────────────────────
 
   // Full hygiene report for an org

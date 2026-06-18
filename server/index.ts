@@ -5,6 +5,7 @@ import compression from "compression";
 import morgan from "morgan";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { startHealthCheckScheduler } from "./healthCheck";
 
 const app = express();
 app.set('trust proxy', 1);
@@ -154,5 +155,8 @@ app.use((req, res, next) => {
     reusePort: true,
   }, () => {
     log(`serving on port ${port}`);
+
+    // Start health check scheduler (runs every 6 hours, emails on failure)
+    startHealthCheckScheduler();
   });
 })();
